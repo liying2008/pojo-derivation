@@ -1,0 +1,19 @@
+apply plugin: 'kotlin'
+
+group 'cc.duduhuo.util'
+version '1.0.0'
+
+dependencies {
+    implementation project(':pojo-derivation-annotations')
+    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8"
+    implementation 'com.google.auto:auto-common:0.10'
+    implementation 'com.google.auto.service:auto-service:1.0-rc4'
+    implementation 'com.squareup:javapoet:1.11.1'
+}
+
+compileKotlin {
+    kotlinOptions.jvmTarget = "1.8"
+}
+compileTestKotlin {
+    kotlinOptions.jvmTarget = "1.8"
+}
