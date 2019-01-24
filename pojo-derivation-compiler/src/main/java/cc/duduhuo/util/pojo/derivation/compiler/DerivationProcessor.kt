@@ -1,9 +1,11 @@
 package cc.duduhuo.util.pojo.derivation.compiler
 
 import cc.duduhuo.util.pojo.derivation.annotation.Derivation
+import cc.duduhuo.util.pojo.derivation.compiler.builder.TargetClassBuilder
 import cc.duduhuo.util.pojo.derivation.compiler.util.MirrorUtils.getValueFieldOfClasses
 import com.bennyhuo.aptutils.AptContext
 import com.bennyhuo.aptutils.logger.Logger
+import com.bennyhuo.aptutils.types.packageName
 import com.bennyhuo.aptutils.types.simpleName
 import com.google.auto.common.MoreElements.getAnnotationMirror
 import com.google.auto.common.MoreTypes
@@ -71,13 +73,23 @@ class DerivationProcessor : AbstractProcessor() {
             Logger.warn("provider implementer: " + element.qualifiedName)
             sourceTypes.add(providerType)
         }
-
-        sourceTypes.forEach { sourceType->
-            reflectClass(sourceType)
+        val targetClass = TargetClass()
+        targetClass.packageName = element.packageName()
+        annotationMirror.elementValues.forEach { executableElement, annotationValue ->
+            Logger.warn(annotationValue.value.toString())
+            when (executableElement.simpleName()) {
+                "name" -> targetClass.simpleName = annotationValue.value.toString()
+                "includeProperties" -> targetClass.includeProperties = annotationValue.value.toString().split(",").toTypedArray()
+                "excludeProperties" -> targetClass.excludeProperties = annotationValue.value.toString().split(",").toTypedArray()
+                "classHeader" -> targetClass.classHeader = annotationValue.value.toString()
+            }
         }
-    }
-
-    private fun  reflectClass(e: TypeElement) {
-        Logger.warn(e, "???")
+        val sourceClass = SourceClass()
+        sourceTypes.forEach { sourceType ->
+            sourceClass.parseFields(sourceType)
+        }
+        sourceClass.genGetterAndSetter()
+        sourceClass.genConstructors()
+        TargetClassBuilder(targetClass, sourceClass).build(AptContext.filer)
     }
 }

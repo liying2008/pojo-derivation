@@ -27,6 +27,13 @@ public @interface Derivation {
     String name();
 
     /**
+     * 类上额外添加的代码（如 Annotation）
+     *
+     * @return
+     */
+    String classHeader() default "";
+
+    /**
      * 源 POJO 类型，将会按照数组的顺序逐个解析
      * 排在前面的类的优先级高，即同名属性优先采用前面的类中的
      *

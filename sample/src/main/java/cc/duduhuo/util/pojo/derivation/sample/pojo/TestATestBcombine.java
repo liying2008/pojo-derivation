@@ -10,6 +10,10 @@ import cc.duduhuo.util.pojo.derivation.annotation.Derivation;
  * Remarks:
  * =======================================================
  */
-@Derivation(name = "AAndB", sourceTypes = {TestA.class, TestB.class})
+@Derivation(
+        name = "AAndB",
+        classHeader = "@TestAnno1(\"AAndB\")",
+        sourceTypes = {TestA.class, TestB.class},
+        excludeProperties = {"level", "level2", "level3"})
 public final class TestATestBcombine {
 }

@@ -1,5 +1,8 @@
 package cc.duduhuo.util.pojo.derivation.sample.pojo;
 
+import cc.duduhuo.util.pojo.derivation.sample.anno.TestAnno1;
+import cc.duduhuo.util.pojo.derivation.sample.anno.TestAnno2;
+
 /**
  * =======================================================
  * Author: liying - liruoer2008@yeah.net
@@ -8,11 +11,14 @@ package cc.duduhuo.util.pojo.derivation.sample.pojo;
  * Remarks:
  * =======================================================
  */
+@TestAnno1("TestA")
 public final class TestA {
+    @TestAnno2
     private String name;
     private int age;
     private boolean isMale;
     private int level;
+    private int level2;
     private String[] hobies;
 
     public TestA() {
@@ -64,5 +70,13 @@ public final class TestA {
 
     public void setHobies(String[] hobies) {
         this.hobies = hobies;
+    }
+
+    public int getLevel2() {
+        return level2;
+    }
+
+    public void setLevel2(int level2) {
+        this.level2 = level2;
     }
 }
