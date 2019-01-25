@@ -9,6 +9,7 @@ sourceCompatibility = 1.8
 
 dependencies {
     implementation project(":pojo-derivation-annotations")
+    implementation project(":pojo-derivation-runtime")
     kapt project(":pojo-derivation-compiler")
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8"
     testImplementation group: 'junit', name: 'junit', version: '4.12'

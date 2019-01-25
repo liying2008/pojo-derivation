@@ -1,16 +1,11 @@
 package cc.duduhuo.util.pojo.derivation.compiler
 
 import cc.duduhuo.util.pojo.derivation.compiler.entity.Field
-import com.bennyhuo.aptutils.logger.Logger
 import com.bennyhuo.aptutils.types.asJavaTypeName
 import com.bennyhuo.aptutils.types.simpleName
-import com.squareup.javapoet.CodeBlock
-import com.squareup.javapoet.FieldSpec
-import com.squareup.javapoet.MethodSpec
-import com.squareup.javapoet.ParameterSpec
+import com.squareup.javapoet.*
 import javax.lang.model.element.ElementKind
 import javax.lang.model.element.Modifier
-import javax.lang.model.element.TypeElement
 
 /**
  * =======================================================
@@ -20,31 +15,72 @@ import javax.lang.model.element.TypeElement
  * Remarks:
  * =======================================================
  */
-class SourceClass() {
+class DerivationLib(private val targetClass: TargetClass) {
     val fieldList = mutableMapOf<String, Field>()
     val methodList = mutableListOf<MethodSpec>()
 
 
-    fun parseFields(typeElement: TypeElement) {
-        val enclosedElements = typeElement.enclosedElements
-        enclosedElements.forEach { element ->
-            Logger.warn(element.simpleName.toString())
-            if (element.kind == ElementKind.FIELD) {
-                val name = element.simpleName()
-                if (name in fieldList) {
-                    return@forEach
+    fun parseFields() {
+        val sourceTypes = targetClass.sourceTypes
+        val excludePropertyAnnotations = targetClass.excludePropertyAnnotations.map {
+            it.toString()
+        }
+        for (sourceType in sourceTypes) {
+            val enclosedElements = sourceType.enclosedElements
+            enclosedElements.forEach { element ->
+                // Logger.warn(element.simpleName.toString())
+                if (element.kind == ElementKind.FIELD) {
+                    val name = element.simpleName()
+                    if (name in fieldList) {
+                        return@forEach
+                    }
+                    val typeName = element.asType().asJavaTypeName()
+                    val modifiers = element.modifiers.toTypedArray()
+                    // field 上的 注解
+                    val annotationSpecs = mutableListOf<AnnotationSpec>()
+                    element.annotationMirrors.forEach {
+                        if (it.annotationType.toString() !in excludePropertyAnnotations) {
+                            annotationSpecs.add(AnnotationSpec.get(it))
+                        }
+                    }
+                    val field = Field(name)
+                    field.enclosingType = sourceType
+                    field.spec = FieldSpec.builder(typeName, name, *modifiers)
+                        .addAnnotations(annotationSpecs)
+                        .build()
+                    fieldList[name] = field
                 }
-                val typeName = element.asType().asJavaTypeName()
-                val modifiers = element.modifiers.toTypedArray()
-                val field = Field(name)
-                field.enclosingType = typeElement
-                field.spec = FieldSpec.builder(typeName, name, *modifiers)
-                    .build()
-                fieldList[name] = field
             }
         }
+        // 过滤 Fields
+        filterFields()
     }
 
+    /**
+     * 过滤 Fields
+     */
+    private fun filterFields() {
+        val includeProperties = targetClass.includeProperties
+        val excludeProperties = targetClass.excludeProperties
+        val filteredMap = mutableMapOf<String, Field>()
+        if (includeProperties.isNotEmpty()) {
+            includeProperties.forEach {
+                filteredMap[it] = fieldList.getValue(it)
+            }
+        } else if (excludeProperties.isNotEmpty()) {
+            fieldList.forEach { name, _ ->
+                if (name !in excludeProperties) {
+                    filteredMap[name] = fieldList.getValue(name)
+                }
+            }
+        }
+        fieldList.clear()
+        fieldList.putAll(filteredMap)
+    }
+
+    /**
+     * 生成 Getter 和 Setter 方法
+     */
     fun genGetterAndSetter() {
         fieldList.forEach { name, field ->
             val spec = field.spec
@@ -68,6 +104,9 @@ class SourceClass() {
         }
     }
 
+    /**
+     * 生成构造方法
+     */
     fun genConstructors() {
         // 无参构造方法
         val emptyConstructor = MethodSpec.constructorBuilder().addModifiers(Modifier.PUBLIC).build()

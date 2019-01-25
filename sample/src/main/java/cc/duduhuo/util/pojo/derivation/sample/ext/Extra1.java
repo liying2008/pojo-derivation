@@ -1,4 +1,4 @@
-package cc.duduhuo.util.pojo.derivation.sample.pojo;
+package cc.duduhuo.util.pojo.derivation.sample.ext;
 
 /**
  * =======================================================

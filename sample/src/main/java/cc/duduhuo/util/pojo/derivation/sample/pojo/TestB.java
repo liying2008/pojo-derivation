@@ -1,5 +1,7 @@
 package cc.duduhuo.util.pojo.derivation.sample.pojo;
 
+import cc.duduhuo.util.pojo.derivation.sample.ext.Extra1;
+
 /**
  * =======================================================
  * Author: liying - liruoer2008@yeah.net

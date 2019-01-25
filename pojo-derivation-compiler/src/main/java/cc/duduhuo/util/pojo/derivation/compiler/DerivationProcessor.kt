@@ -1,6 +1,7 @@
 package cc.duduhuo.util.pojo.derivation.compiler
 
 import cc.duduhuo.util.pojo.derivation.annotation.Derivation
+import cc.duduhuo.util.pojo.derivation.annotation.Language
 import cc.duduhuo.util.pojo.derivation.compiler.builder.TargetClassBuilder
 import cc.duduhuo.util.pojo.derivation.compiler.util.MirrorUtils.getValueFieldOfClasses
 import com.bennyhuo.aptutils.AptContext
@@ -59,37 +60,52 @@ class DerivationProcessor : AbstractProcessor() {
     }
 
     private fun processElement(element: TypeElement) {
+        val targetClass = TargetClass()
+        targetClass.packageName = element.packageName()
+
         val annotationMirror = getAnnotationMirror(element, Derivation::class.java).get()
-        val providerInterfaces = getValueFieldOfClasses(annotationMirror, "sourceTypes")
-        if (providerInterfaces.isEmpty()) {
+        val sourceTypesInterfaces = getValueFieldOfClasses(annotationMirror, "sourceTypes")
+        if (sourceTypesInterfaces.isEmpty()) {
             Logger.error(element, MISSING_SERVICES_ERROR, annotationMirror)
             return
         }
 
-        val sourceTypes = mutableListOf<TypeElement>()
-        for (providerInterface in providerInterfaces) {
-            val providerType = MoreTypes.asTypeElement(providerInterface)
-            Logger.warn("provider interface: " + providerType.qualifiedName)
-            Logger.warn("provider implementer: " + element.qualifiedName)
-            sourceTypes.add(providerType)
+        for (sourceTypesInterface in sourceTypesInterfaces) {
+            val sourceType = MoreTypes.asTypeElement(sourceTypesInterface)
+            Logger.warn("sourceType: " + sourceType.qualifiedName)
+            targetClass.sourceTypes.add(sourceType)
         }
-        val targetClass = TargetClass()
-        targetClass.packageName = element.packageName()
+
         annotationMirror.elementValues.forEach { executableElement, annotationValue ->
-            Logger.warn(annotationValue.value.toString())
+            Logger.note(executableElement, annotationValue.value.toString())
             when (executableElement.simpleName()) {
                 "name" -> targetClass.simpleName = annotationValue.value.toString()
-                "includeProperties" -> targetClass.includeProperties = annotationValue.value.toString().split(",").toTypedArray()
-                "excludeProperties" -> targetClass.excludeProperties = annotationValue.value.toString().split(",").toTypedArray()
-                "classHeader" -> targetClass.classHeader = annotationValue.value.toString()
+                "includeProperties" -> {
+                    targetClass.includeProperties = annotationValue.value.toString().split(",").map {
+                        it.trimStart('"').trimEnd('"')
+                    }
+                }
+                "excludeProperties" -> {
+                    targetClass.excludeProperties = annotationValue.value.toString().split(",").map {
+                        it.trimStart('"').trimEnd('"')
+                    }
+                }
+                "excludePropertyAnnotations" -> {
+                    val excludePropertyAnnotationsInterfaces =
+                        getValueFieldOfClasses(annotationMirror, "excludePropertyAnnotations")
+                    for (excludePropertyAnnotationsInterface in excludePropertyAnnotationsInterfaces) {
+                        val excludePropertyAnnotation = MoreTypes.asTypeElement(excludePropertyAnnotationsInterface)
+                        Logger.warn("excludePropertyAnnotation: " + excludePropertyAnnotation.qualifiedName)
+                        targetClass.excludePropertyAnnotations.add(excludePropertyAnnotation)
+                    }
+                }
+                "language" -> targetClass.language = Language.valueOf(annotationValue.value.toString())
             }
         }
-        val sourceClass = SourceClass()
-        sourceTypes.forEach { sourceType ->
-            sourceClass.parseFields(sourceType)
-        }
-        sourceClass.genGetterAndSetter()
-        sourceClass.genConstructors()
-        TargetClassBuilder(targetClass, sourceClass).build(AptContext.filer)
+        val derivationLib = DerivationLib(targetClass)
+        derivationLib.parseFields()
+        derivationLib.genGetterAndSetter()
+        derivationLib.genConstructors()
+        TargetClassBuilder(targetClass, derivationLib).build()
     }
 }

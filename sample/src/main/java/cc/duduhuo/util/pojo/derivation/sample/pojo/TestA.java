@@ -13,12 +13,28 @@ import cc.duduhuo.util.pojo.derivation.sample.anno.TestAnno2;
  */
 @TestAnno1("TestA")
 public final class TestA {
-    @TestAnno2
+    @TestAnno1("TestA")
+    @TestAnno2(name = "name", value = 24)
     private String name;
+
+    @TestAnno1("TestA")
+    @TestAnno2(name = "age", value = 25)
     private int age;
+
+    @TestAnno1("TestA")
+    @TestAnno2(name = "isMale", value = 26)
     private boolean isMale;
+
+    @TestAnno1("TestA")
+    @TestAnno2(name = "level", value = 27)
     private int level;
+
+    @TestAnno1("TestA")
+    @TestAnno2(name = "level2", value = 28)
     private int level2;
+
+    @TestAnno1("TestA")
+    @TestAnno2(name = "hobies", value = 29)
     private String[] hobies;
 
     public TestA() {
