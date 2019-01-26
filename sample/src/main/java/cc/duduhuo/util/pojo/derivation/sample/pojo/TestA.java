@@ -27,7 +27,7 @@ public final class TestA {
 
     @TestAnno1("TestA")
     @TestAnno2(name = "level", value = 27)
-    private int level;
+    private Integer level;
 
     @TestAnno1("TestA")
     @TestAnno2(name = "level2", value = 28)
@@ -36,6 +36,9 @@ public final class TestA {
     @TestAnno1("TestA")
     @TestAnno2(name = "hobies", value = 29)
     private String[] hobies;
+
+    // 以 is 开头，但不是 Boolean/boolean 类型
+    private Character isA;
 
     public TestA() {
     }
@@ -72,11 +75,11 @@ public final class TestA {
         isMale = male;
     }
 
-    public int getLevel() {
+    public Integer getLevel() {
         return level;
     }
 
-    public void setLevel(int level) {
+    public void setLevel(Integer level) {
         this.level = level;
     }
 
@@ -94,5 +97,13 @@ public final class TestA {
 
     public void setLevel2(int level2) {
         this.level2 = level2;
+    }
+
+    public Character getIsA() {
+        return isA;
+    }
+
+    public void setIsA(Character isA) {
+        this.isA = isA;
     }
 }

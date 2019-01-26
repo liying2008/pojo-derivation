@@ -1,6 +1,8 @@
 package cc.duduhuo.util.pojo.derivation.sample.pojo;
 
+import cc.duduhuo.util.pojo.derivation.annotation.ConstructorType;
 import cc.duduhuo.util.pojo.derivation.annotation.Derivation;
+import cc.duduhuo.util.pojo.derivation.annotation.Language;
 import cc.duduhuo.util.pojo.derivation.sample.anno.TestAnno1;
 
 /**
@@ -14,7 +16,10 @@ import cc.duduhuo.util.pojo.derivation.sample.anno.TestAnno1;
 @Derivation(
         name = "AAndKotlinB",
         sourceTypes = {TestA.class, KotlinTestB.class},
+        includeProperties = "number",
         excludeProperties = {"level", "level2", "level3"},
-        excludePropertyAnnotations = {TestAnno1.class})
+        excludePropertyAnnotations = {TestAnno1.class},
+        constructorTypes = {ConstructorType.NO_ARGS, ConstructorType.ALL_ARGS, ConstructorType.ALL_SOURCE_OBJ},
+        languages = {Language.JAVA, Language.KOTLIN})
 public class TestAKotlinBCombine {
 }

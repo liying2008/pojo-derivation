@@ -14,7 +14,8 @@ public final class TestB {
     private String name;
     private int number;
     private String description;
-    private double score;
+    private Double score;
+    private Boolean isSuccess;
     private Extra1 extra1;
 
     public TestB() {
@@ -52,11 +53,11 @@ public final class TestB {
         this.description = description;
     }
 
-    public double getScore() {
+    public Double getScore() {
         return score;
     }
 
-    public void setScore(double score) {
+    public void setScore(Double score) {
         this.score = score;
     }
 
@@ -66,5 +67,13 @@ public final class TestB {
 
     public void setExtra1(Extra1 extra1) {
         this.extra1 = extra1;
+    }
+
+    public Boolean getSuccess() {
+        return isSuccess;
+    }
+
+    public void setSuccess(Boolean success) {
+        isSuccess = success;
     }
 }

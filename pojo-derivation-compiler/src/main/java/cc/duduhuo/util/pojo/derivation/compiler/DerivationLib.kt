@@ -1,5 +1,6 @@
 package cc.duduhuo.util.pojo.derivation.compiler
 
+import cc.duduhuo.util.pojo.derivation.annotation.ConstructorType
 import cc.duduhuo.util.pojo.derivation.compiler.entity.Field
 import com.bennyhuo.aptutils.types.asJavaTypeName
 import com.bennyhuo.aptutils.types.simpleName
@@ -87,14 +88,14 @@ class DerivationLib(private val targetClass: TargetClass) {
             if (spec.hasModifier(Modifier.PUBLIC) || spec.hasModifier(Modifier.PROTECTED)) {
                 return@forEach
             }
-            val getMethod = MethodSpec.methodBuilder(getGetterName(name))
+            val getMethod = MethodSpec.methodBuilder(getGetterName(spec.type, name))
                 .addModifiers(Modifier.PUBLIC)
                 .returns(spec.type)
                 .addStatement("return \$L", name)
                 .build()
             this.methodList.add(getMethod)
             if (!spec.hasModifier(Modifier.FINAL)) {
-                val setMethod = MethodSpec.methodBuilder(getSetterName(name))
+                val setMethod = MethodSpec.methodBuilder(getSetterName(spec.type, name))
                     .addModifiers(Modifier.PUBLIC)
                     .addParameter(spec.type, name)
                     .addStatement("this.\$L = \$L", name, name)
@@ -108,53 +109,67 @@ class DerivationLib(private val targetClass: TargetClass) {
      * 生成构造方法
      */
     fun genConstructors() {
+        val constructorTypes = targetClass.constructorTypes
         // 无参构造方法
-        val emptyConstructor = MethodSpec.constructorBuilder().addModifiers(Modifier.PUBLIC).build()
-        // 全参构造方法
-        val parameterSpecs = mutableListOf<ParameterSpec>()
-        val codeBlocks = mutableListOf<CodeBlock>()
-        fieldList.forEach { name, field ->
-            val spec = field.spec
-            parameterSpecs.add(ParameterSpec.builder(spec.type, name).build())
-            codeBlocks.add(CodeBlock.of("this.\$L = \$L", name, name))
+        if (ConstructorType.NO_ARGS in constructorTypes) {
+            val emptyConstructor = MethodSpec.constructorBuilder().addModifiers(Modifier.PUBLIC).build()
+            methodList.add(emptyConstructor)
         }
-        val fullConstructorBuilder = MethodSpec.constructorBuilder().addModifiers(Modifier.PUBLIC)
-            .addParameters(parameterSpecs)
+        // 全参构造方法
+        if (ConstructorType.ALL_ARGS in constructorTypes) {
+            val parameterSpecs = mutableListOf<ParameterSpec>()
+            val codeBlocks = mutableListOf<CodeBlock>()
+            fieldList.forEach { name, field ->
+                val spec = field.spec
+                parameterSpecs.add(ParameterSpec.builder(spec.type, name).build())
+                codeBlocks.add(CodeBlock.of("this.\$L = \$L", name, name))
+            }
+            val fullConstructorBuilder = MethodSpec.constructorBuilder().addModifiers(Modifier.PUBLIC)
+                .addParameters(parameterSpecs)
 
-        codeBlocks.forEach {
-            fullConstructorBuilder.addStatement(it)
+            codeBlocks.forEach {
+                fullConstructorBuilder.addStatement(it)
+            }
+            methodList.add(fullConstructorBuilder.build())
         }
         // 源对象构造方法
-        parameterSpecs.clear()
-        codeBlocks.clear()
-        val groupedField = fieldList.values.groupBy { it.enclosingType }
-        groupedField.forEach { enclosingType, fields ->
-            val sourceTypeVar = enclosingType.simpleName().decapitalize()
-            parameterSpecs.add(ParameterSpec.builder(enclosingType.asType().asJavaTypeName(), sourceTypeVar).build())
-            for (field in fields) {
-                codeBlocks.add(
-                    CodeBlock.of(
-                        "this.\$L(\$L.\$L())",
-                        getSetterName(field.name),
-                        sourceTypeVar,
-                        getGetterName(field.name)
-                    )
+        if (ConstructorType.ALL_SOURCE_OBJ in constructorTypes) {
+            val parameterSpecs = mutableListOf<ParameterSpec>()
+            val codeBlocks = mutableListOf<CodeBlock>()
+            val groupedField = fieldList.values.groupBy { it.enclosingType }
+            groupedField.forEach { enclosingType, fields ->
+                val sourceTypeVar = enclosingType.simpleName().decapitalize()
+                parameterSpecs.add(
+                    ParameterSpec.builder(
+                        enclosingType.asType().asJavaTypeName(),
+                        sourceTypeVar
+                    ).build()
                 )
+                for (field in fields) {
+                    codeBlocks.add(
+                        CodeBlock.of(
+                            "this.\$L(\$L.\$L())",
+                            getSetterName(field.spec.type, field.name),
+                            sourceTypeVar,
+                            getGetterName(field.spec.type, field.name)
+                        )
+                    )
+                }
             }
+            val sourceObjConstructor = MethodSpec.constructorBuilder().addModifiers(Modifier.PUBLIC)
+                .addParameters(parameterSpecs)
+            codeBlocks.forEach {
+                sourceObjConstructor.addStatement(it)
+            }
+            methodList.add(sourceObjConstructor.build())
         }
-        val sourceObjConstructor = MethodSpec.constructorBuilder().addModifiers(Modifier.PUBLIC)
-            .addParameters(parameterSpecs)
-        codeBlocks.forEach {
-            sourceObjConstructor.addStatement(it)
-        }
-
-        methodList.add(emptyConstructor)
-        methodList.add(fullConstructorBuilder.build())
-        methodList.add(sourceObjConstructor.build())
     }
 
-    private fun getSetterName(name: String): String {
-        val property = if (name.startsWith("is")) {
+    private fun getSetterName(typeName: TypeName, name: String): String {
+        val property = if ((typeName.isPrimitive || typeName.isBoxedPrimitive)
+            && typeName.unbox() == TypeName.BOOLEAN
+            && name.startsWith("is")
+        ) {
             name.substring(2)
         } else {
             name
@@ -162,9 +177,13 @@ class DerivationLib(private val targetClass: TargetClass) {
         return "set${property.capitalize()}"
     }
 
-    private fun getGetterName(name: String): String {
+    private fun getGetterName(typeName: TypeName, name: String): String {
         return if (name.startsWith("is")) {
-            name
+            when {
+                typeName == TypeName.BOOLEAN -> name
+                typeName.isBoxedPrimitive && typeName.unbox() == TypeName.BOOLEAN -> "get" + name.substring(2).capitalize()
+                else -> "get${name.capitalize()}"
+            }
         } else {
             "get${name.capitalize()}"
         }

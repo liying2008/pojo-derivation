@@ -1,5 +1,6 @@
 package cc.duduhuo.util.pojo.derivation.compiler
 
+import cc.duduhuo.util.pojo.derivation.annotation.ConstructorType
 import cc.duduhuo.util.pojo.derivation.annotation.Language
 import javax.lang.model.element.TypeElement
 
@@ -18,5 +19,6 @@ class TargetClass {
     var includeProperties = listOf<String>()
     var excludeProperties = listOf<String>()
     var excludePropertyAnnotations = mutableListOf<TypeElement>()
-    var language = Language.JAVA
+    var constructorTypes = listOf(ConstructorType.NO_ARGS, ConstructorType.ALL_ARGS)
+    var languages = listOf(Language.JAVA)
 }

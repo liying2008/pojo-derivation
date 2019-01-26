@@ -15,5 +15,6 @@ class KotlinTestB {
     var number: Int = 0
     var description: String? = null
     var score: Double = 0.0
+    var isSuccess: Boolean = false
     var extra1: Extra1? = null
 }

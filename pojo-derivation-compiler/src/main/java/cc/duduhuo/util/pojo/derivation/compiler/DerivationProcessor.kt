@@ -1,5 +1,6 @@
 package cc.duduhuo.util.pojo.derivation.compiler
 
+import cc.duduhuo.util.pojo.derivation.annotation.ConstructorType
 import cc.duduhuo.util.pojo.derivation.annotation.Derivation
 import cc.duduhuo.util.pojo.derivation.annotation.Language
 import cc.duduhuo.util.pojo.derivation.compiler.builder.TargetClassBuilder
@@ -99,7 +100,17 @@ class DerivationProcessor : AbstractProcessor() {
                         targetClass.excludePropertyAnnotations.add(excludePropertyAnnotation)
                     }
                 }
-                "language" -> targetClass.language = Language.valueOf(annotationValue.value.toString())
+                "constructorTypes" -> {
+                    targetClass.constructorTypes = annotationValue.value.toString().split(",").map {
+                        ConstructorType.valueOf(it.trimStart(*"cc.duduhuo.util.pojo.derivation.annotation.ConstructorType.".toCharArray()))
+                    }
+                }
+
+                "languages" -> {
+                    targetClass.languages = annotationValue.value.toString().split(",").map {
+                        Language.valueOf(it.trimStart(*"cc.duduhuo.util.pojo.derivation.annotation.Language.".toCharArray()))
+                    }
+                }
             }
         }
         val derivationLib = DerivationLib(targetClass)

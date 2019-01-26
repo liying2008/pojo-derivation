@@ -58,9 +58,16 @@ public @interface Derivation {
     Class<?>[] excludePropertyAnnotations() default {};
 
     /**
+     * 构造方法类型
+     *
+     * @return
+     */
+    ConstructorType[] constructorTypes() default {ConstructorType.NO_ARGS, ConstructorType.ALL_ARGS};
+
+    /**
      * 生成的 POJO 类的语言
      *
      * @return
      */
-    Language language() default Language.JAVA;
+    Language[] languages() default {Language.JAVA};
 }
