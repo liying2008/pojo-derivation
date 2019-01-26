@@ -11,5 +11,5 @@ package cc.duduhuo.util.pojo.derivation.annotation;
 public enum ConstructorType {
     NO_ARGS,
     ALL_ARGS,
-    ALL_SOURCE_OBJ,
+    ALL_SOURCE_OBJS,
 }

@@ -13,7 +13,7 @@ import cc.duduhuo.util.pojo.derivation.sample.ext.Extra1;
 public final class TestB {
     private String name;
     private int number;
-    private String description;
+    private String description = "this is a description";
     private Double score;
     private Boolean isSuccess;
     private Extra1 extra1;

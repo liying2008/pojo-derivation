@@ -66,8 +66,9 @@ public @interface Derivation {
 
     /**
      * 生成的 POJO 类的语言
+     * 暂不支持
      *
      * @return
      */
-    Language[] languages() default {Language.JAVA};
+    // Language[] languages() default {Language.JAVA};
 }

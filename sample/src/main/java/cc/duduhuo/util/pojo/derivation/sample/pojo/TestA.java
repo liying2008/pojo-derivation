@@ -19,11 +19,11 @@ public final class TestA {
 
     @TestAnno1("TestA")
     @TestAnno2(name = "age", value = 25)
-    private int age;
+    private int age = 20;
 
     @TestAnno1("TestA")
     @TestAnno2(name = "isMale", value = 26)
-    private boolean isMale;
+    private boolean isMale = true;
 
     @TestAnno1("TestA")
     @TestAnno2(name = "level", value = 27)
@@ -35,7 +35,7 @@ public final class TestA {
 
     @TestAnno1("TestA")
     @TestAnno2(name = "hobies", value = 29)
-    private String[] hobies;
+    private String[] hobies = new String[]{};
 
     // 以 is 开头，但不是 Boolean/boolean 类型
     private Character isA;

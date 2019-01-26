@@ -19,7 +19,6 @@ import cc.duduhuo.util.pojo.derivation.sample.anno.TestAnno1;
         includeProperties = "number",
         excludeProperties = {"level", "level2", "level3"},
         excludePropertyAnnotations = {TestAnno1.class},
-        constructorTypes = {ConstructorType.NO_ARGS, ConstructorType.ALL_ARGS, ConstructorType.ALL_SOURCE_OBJ},
-        languages = {Language.JAVA, Language.KOTLIN})
+        constructorTypes = {ConstructorType.NO_ARGS, ConstructorType.ALL_ARGS, ConstructorType.ALL_SOURCE_OBJS})
 public class TestAKotlinBCombine {
 }

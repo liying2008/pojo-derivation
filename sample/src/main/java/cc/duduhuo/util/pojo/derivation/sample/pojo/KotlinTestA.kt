@@ -18,11 +18,11 @@ class KotlinTestA {
 
     @TestAnno1("TestA")
     @TestAnno2(name = "age", value = 25)
-    var age: Int = 0
+    var age: Int = 20
 
     @TestAnno1("TestA")
     @TestAnno2(name = "isMale", value = 26)
-    var isMale: Boolean = false
+    var isMale: Boolean = true
 
     @TestAnno1("TestA")
     @TestAnno2(name = "level", value = 27)
@@ -34,5 +34,5 @@ class KotlinTestA {
 
     @TestAnno1("TestA")
     @TestAnno2(name = "hobies", value = 29)
-    var hobies: Array<String>? = null
+    var hobies: Array<String> = arrayOf()
 }

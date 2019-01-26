@@ -2,11 +2,13 @@ package cc.duduhuo.util.pojo.derivation.compiler
 
 import cc.duduhuo.util.pojo.derivation.annotation.ConstructorType
 import cc.duduhuo.util.pojo.derivation.compiler.entity.Field
+import cc.duduhuo.util.pojo.derivation.compiler.util.ReflectUtils
 import com.bennyhuo.aptutils.types.asJavaTypeName
 import com.bennyhuo.aptutils.types.simpleName
 import com.squareup.javapoet.*
 import javax.lang.model.element.ElementKind
 import javax.lang.model.element.Modifier
+import javax.lang.model.element.VariableElement
 
 /**
  * =======================================================
@@ -28,6 +30,7 @@ class DerivationLib(private val targetClass: TargetClass) {
         }
         for (sourceType in sourceTypes) {
             val enclosedElements = sourceType.enclosedElements
+            ReflectUtils.getVariableInitialValue(sourceType)
             enclosedElements.forEach { element ->
                 // Logger.warn(element.simpleName.toString())
                 if (element.kind == ElementKind.FIELD) {
@@ -35,6 +38,7 @@ class DerivationLib(private val targetClass: TargetClass) {
                     if (name in fieldList) {
                         return@forEach
                     }
+                    element as VariableElement
                     val typeName = element.asType().asJavaTypeName()
                     val modifiers = element.modifiers.toTypedArray()
                     // field 上的 注解
@@ -46,9 +50,9 @@ class DerivationLib(private val targetClass: TargetClass) {
                     }
                     val field = Field(name)
                     field.enclosingType = sourceType
-                    field.spec = FieldSpec.builder(typeName, name, *modifiers)
-                        .addAnnotations(annotationSpecs)
-                        .build()
+                    val fieldSpecBuilder = FieldSpec.builder(typeName, name, *modifiers)
+                    fieldSpecBuilder.addAnnotations(annotationSpecs)
+                    field.spec = fieldSpecBuilder.build()
                     fieldList[name] = field
                 }
             }
@@ -133,7 +137,7 @@ class DerivationLib(private val targetClass: TargetClass) {
             methodList.add(fullConstructorBuilder.build())
         }
         // 源对象构造方法
-        if (ConstructorType.ALL_SOURCE_OBJ in constructorTypes) {
+        if (ConstructorType.ALL_SOURCE_OBJS in constructorTypes) {
             val parameterSpecs = mutableListOf<ParameterSpec>()
             val codeBlocks = mutableListOf<CodeBlock>()
             val groupedField = fieldList.values.groupBy { it.enclosingType }
