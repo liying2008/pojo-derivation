@@ -1,14 +1,19 @@
 package cc.duduhuo.util.pojo.derivation.compiler
 
 import cc.duduhuo.util.pojo.derivation.annotation.ConstructorType
+import cc.duduhuo.util.pojo.derivation.annotation.Derivation
+import cc.duduhuo.util.pojo.derivation.annotation.DerivationConstructorExclude
+import cc.duduhuo.util.pojo.derivation.annotation.DerivationField
 import cc.duduhuo.util.pojo.derivation.compiler.entity.Field
 import com.bennyhuo.aptutils.AptContext
 import com.bennyhuo.aptutils.types.asJavaTypeName
+import com.bennyhuo.aptutils.types.isSameTypeWith
 import com.bennyhuo.aptutils.types.simpleName
 import com.squareup.javapoet.*
 import javax.lang.model.element.ElementKind
 import javax.lang.model.element.Modifier
 import javax.lang.model.element.VariableElement
+import javax.lang.model.type.TypeKind
 
 /**
  * =======================================================
@@ -30,6 +35,7 @@ class DerivationLib(private val targetClass: TargetClass) {
             it.toString()
         }
         for (sourceType in sourceTypes) {
+            val combineType = sourceType.getAnnotation(Derivation::class.java) != null
             val enclosedElements = sourceType.enclosedElements
             enclosedElements.forEach { element ->
                 // Logger.warn(element.simpleName.toString())
@@ -44,11 +50,18 @@ class DerivationLib(private val targetClass: TargetClass) {
                     // field 上的 注解
                     val annotationSpecs = mutableListOf<AnnotationSpec>()
                     element.annotationMirrors.forEach {
-                        if (it.annotationType.toString() !in excludePropertyAnnotations) {
+                        val annotationName = it.annotationType.toString()
+                        if (annotationName !in excludePropertyAnnotations
+                            && annotationName != DerivationField::class.java.canonicalName
+                        ) {
                             annotationSpecs.add(AnnotationSpec.get(it))
                         }
                     }
                     val field = Field(name)
+                    field.constructorExclude = element.getAnnotation(DerivationConstructorExclude::class.java) != null
+                    field.hasConstantValue = element.constantValue != null
+                    field.isFinal = Modifier.FINAL in modifiers
+                    field.combineType = combineType
                     field.enclosingType = sourceType
                     val fieldSpecBuilder = FieldSpec.builder(typeName, name, *modifiers)
                     fieldSpecBuilder.addAnnotations(annotationSpecs)
@@ -56,6 +69,7 @@ class DerivationLib(private val targetClass: TargetClass) {
                     if (javadoc != null) {
                         fieldSpecBuilder.addJavadoc(javadoc)
                     }
+                    addInitValue(element, fieldSpecBuilder)
                     field.spec = fieldSpecBuilder.build()
                     fieldList[name] = field
                 }
@@ -63,6 +77,20 @@ class DerivationLib(private val targetClass: TargetClass) {
         }
         // 过滤 Fields
         filterFields()
+    }
+
+    private fun addInitValue(element: VariableElement, fieldSpecBuilder: FieldSpec.Builder) {
+        val annotation = element.getAnnotation(DerivationField::class.java) ?: return
+        val initialValue = annotation.initialValue ?: return
+        if (element.asType().isSameTypeWith(String::class.java)) {
+            fieldSpecBuilder.initializer("\$S", initialValue)
+        } else if (element.asType().isSameTypeWith(Character::class.java) ||
+            element.asType().kind == TypeKind.CHAR
+        ) {
+            fieldSpecBuilder.initializer("'\$L'", initialValue)
+        } else {
+            fieldSpecBuilder.initializer("\$L", initialValue)
+        }
     }
 
     /**
@@ -120,8 +148,17 @@ class DerivationLib(private val targetClass: TargetClass) {
         val constructorTypes = targetClass.constructorTypes
         // 无参构造方法
         if (ConstructorType.NO_ARGS in constructorTypes) {
-            val emptyConstructor = MethodSpec.constructorBuilder().addModifiers(Modifier.PUBLIC).build()
-            methodList.add(emptyConstructor)
+            val emptyConstructorBuilder = MethodSpec.constructorBuilder().addModifiers(Modifier.PUBLIC)
+            fieldList.forEach { name, field ->
+                if (!field.constructorExclude && field.isFinal && !field.hasConstantValue) {
+                    emptyConstructorBuilder.addStatement(
+                        "this.\$L = \$L",
+                        name,
+                        getInitValueByTypeName(field.spec.type)
+                    )
+                }
+            }
+            methodList.add(emptyConstructorBuilder.build())
         }
         // 全参构造方法
         if (ConstructorType.ALL_ARGS in constructorTypes) {
@@ -129,6 +166,15 @@ class DerivationLib(private val targetClass: TargetClass) {
             val codeBlocks = mutableListOf<CodeBlock>()
             fieldList.forEach { name, field ->
                 val spec = field.spec
+                if (field.constructorExclude) {
+                    return@forEach
+                }
+                if (spec.hasModifier(Modifier.STATIC)) {
+                    return@forEach
+                }
+                if (field.isFinal && field.hasConstantValue) {
+                    return@forEach
+                }
                 parameterSpecs.add(ParameterSpec.builder(spec.type, name).build())
                 codeBlocks.add(CodeBlock.of("this.\$L = \$L", name, name))
             }
@@ -144,7 +190,7 @@ class DerivationLib(private val targetClass: TargetClass) {
         if (ConstructorType.ALL_SOURCE_OBJS in constructorTypes) {
             val parameterSpecs = mutableListOf<ParameterSpec>()
             val codeBlocks = mutableListOf<CodeBlock>()
-            val groupedField = fieldList.values.groupBy { it.enclosingType }
+            val groupedField = fieldList.values.filterNot { it.combineType }.groupBy { it.enclosingType }
             groupedField.forEach { enclosingType, fields ->
                 val sourceTypeVar = enclosingType.simpleName().decapitalize()
                 parameterSpecs.add(
@@ -154,14 +200,27 @@ class DerivationLib(private val targetClass: TargetClass) {
                     ).build()
                 )
                 for (field in fields) {
-                    codeBlocks.add(
+                    val spec = field.spec
+                    if (field.constructorExclude) {
+                        continue
+                    }
+                    if (spec.hasModifier(Modifier.STATIC)) {
+                        continue
+                    }
+                    if (field.isFinal && field.hasConstantValue) {
+                        continue
+                    }
+                    val codeBock = if (spec.hasModifier(Modifier.PRIVATE)) {
                         CodeBlock.of(
                             "this.\$L(\$L.\$L())",
-                            getSetterName(field.spec.type, field.name),
+                            getSetterName(spec.type, field.name),
                             sourceTypeVar,
-                            getGetterName(field.spec.type, field.name)
+                            getGetterName(spec.type, field.name)
                         )
-                    )
+                    } else {
+                        CodeBlock.of("this.\$L = \$L.\$L", field.name, sourceTypeVar, field.name)
+                    }
+                    codeBlocks.add(codeBock)
                 }
             }
             val sourceObjConstructor = MethodSpec.constructorBuilder().addModifiers(Modifier.PUBLIC)
@@ -170,6 +229,16 @@ class DerivationLib(private val targetClass: TargetClass) {
                 sourceObjConstructor.addStatement(it)
             }
             methodList.add(sourceObjConstructor.build())
+        }
+    }
+
+    private fun getInitValueByTypeName(typeName: TypeName): Any? {
+        return when (typeName) {
+            TypeName.BOOLEAN -> false
+            TypeName.BYTE, TypeName.CHAR, TypeName.INT, TypeName.SHORT, TypeName.LONG -> 0
+            TypeName.FLOAT -> 0.0F
+            TypeName.DOUBLE -> 0.0
+            else -> null
         }
     }
 

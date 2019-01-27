@@ -15,7 +15,7 @@ import javax.lang.model.element.TypeElement
 class TargetClass {
     lateinit var simpleName: String
     var packageName = ""
-    var sourceTypes = listOf<TypeElement>()
+    var sourceTypes = mutableListOf<TypeElement>()
     var includeProperties = listOf<String>()
     var excludeProperties = listOf<String>()
     var excludePropertyAnnotations = listOf<TypeElement>()

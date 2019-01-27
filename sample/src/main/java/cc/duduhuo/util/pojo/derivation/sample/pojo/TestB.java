@@ -1,5 +1,6 @@
 package cc.duduhuo.util.pojo.derivation.sample.pojo;
 
+import cc.duduhuo.util.pojo.derivation.annotation.DerivationField;
 import cc.duduhuo.util.pojo.derivation.sample.ext.Extra1;
 
 /**
@@ -12,10 +13,16 @@ import cc.duduhuo.util.pojo.derivation.sample.ext.Extra1;
  */
 public final class TestB {
     private String name;
+
     private int number;
+
+    @DerivationField(initialValue = "this is a \"a\" description")
     private String description = "this is a description";
+
     private Double score;
+
     private Boolean isSuccess;
+
     private Extra1 extra1;
 
     public TestB() {

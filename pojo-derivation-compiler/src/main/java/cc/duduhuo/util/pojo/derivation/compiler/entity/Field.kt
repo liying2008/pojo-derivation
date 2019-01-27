@@ -12,6 +12,10 @@ import javax.lang.model.element.TypeElement
  * =======================================================
  */
 class Field(val name: String) {
+    var combineType = false
+    var constructorExclude = false
+    var hasConstantValue = false
+    var isFinal = false
     lateinit var enclosingType: TypeElement
     lateinit var spec: FieldSpec
 }

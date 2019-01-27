@@ -1,5 +1,7 @@
 package cc.duduhuo.util.pojo.derivation.sample.pojo;
 
+import cc.duduhuo.util.pojo.derivation.annotation.DerivationConstructorExclude;
+import cc.duduhuo.util.pojo.derivation.annotation.DerivationField;
 import cc.duduhuo.util.pojo.derivation.sample.anno.TestAnno1;
 import cc.duduhuo.util.pojo.derivation.sample.anno.TestAnno2;
 
@@ -13,6 +15,17 @@ import cc.duduhuo.util.pojo.derivation.sample.anno.TestAnno2;
  */
 @TestAnno1("TestA")
 public final class TestA {
+    @TestAnno2(name = "finalVar1", value = 21)
+    public final char finalVar1;
+
+    @DerivationField(initialValue = "final")
+    @TestAnno2(name = "finalVar2", value = 22)
+    public final String finalVar2 = "finalVar2";
+
+    @DerivationField(initialValue = "SV")
+    @TestAnno2(name = "STATIC_VAR", value = 23)
+    public static final String STATIC_VAR = "SV";
+
     /**
      * Doc: name
      */
@@ -27,6 +40,7 @@ public final class TestA {
     /**
      * Doc: isMale
      */
+    @DerivationField(initialValue = "true")
     @TestAnno1("TestA")
     @TestAnno2(name = "isMale", value = 26)
     private boolean isMale = true;
@@ -39,17 +53,23 @@ public final class TestA {
     @TestAnno2(name = "level2", value = 28)
     private int level2;
 
+    @DerivationField(initialValue = "new String[]{}")
     @TestAnno1("TestA")
     @TestAnno2(name = "hobies", value = 29)
     private String[] hobies = new String[]{};
 
     // 以 is 开头，但不是 Boolean/boolean 类型
+    @DerivationConstructorExclude
+    @DerivationField(initialValue = "a")
     private Character isA;
 
-    public TestA() {
-    }
+    // 以 set 开头的变量
+    @DerivationConstructorExclude
+    @DerivationField(initialValue = "b")
+    private char setB;
 
-    public TestA(String name, int age, boolean isMale, int level, String[] hobies) {
+    public TestA(char finalVar1, String name, int age, boolean isMale, int level, String[] hobies) {
+        this.finalVar1 = finalVar1;
         this.name = name;
         this.age = age;
         this.isMale = isMale;
@@ -111,5 +131,13 @@ public final class TestA {
 
     public void setIsA(Character isA) {
         this.isA = isA;
+    }
+
+    public char getSetB() {
+        return setB;
+    }
+
+    public void setSetB(char setB) {
+        this.setB = setB;
     }
 }

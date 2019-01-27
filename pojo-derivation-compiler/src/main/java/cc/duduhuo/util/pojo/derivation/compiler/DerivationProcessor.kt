@@ -47,7 +47,7 @@ class DerivationProcessor : AbstractProcessor() {
     override fun process(annotations: MutableSet<out TypeElement>, roundEnv: RoundEnvironment): Boolean {
         roundEnv.getElementsAnnotatedWith(Derivation::class.java).filter { it.kind.isClass }
             .forEach { element: Element ->
-                Logger.warn(element, element.simpleName())
+                // Logger.warn(element, element.simpleName())
                 processElement(element as TypeElement)
             }
         return true
@@ -56,6 +56,7 @@ class DerivationProcessor : AbstractProcessor() {
     private fun processElement(element: TypeElement) {
         val targetClass = TargetClass()
         targetClass.packageName = element.packageName()
+        targetClass.sourceTypes.add(element)
 
         val annotationMirror = getAnnotationMirror(element, Derivation::class.java).get()
         annotationMirror.elementValues.forEach { executableElement, annotationValue ->
@@ -63,9 +64,9 @@ class DerivationProcessor : AbstractProcessor() {
             when (executableElement.simpleName()) {
                 "name" -> targetClass.simpleName = annotationValue.value.toString()
                 "sourceTypes" -> {
-                    targetClass.sourceTypes = annotationValue.value.toString().split(",").map {
+                    targetClass.sourceTypes.addAll(annotationValue.value.toString().split(",").map {
                         AptContext.elements.getTypeElement(it.trimEnd(*".class".toCharArray()))
-                    }
+                    })
                 }
                 "includeProperties" -> {
                     targetClass.includeProperties = annotationValue.value.toString().split(",").map {
@@ -96,9 +97,13 @@ class DerivationProcessor : AbstractProcessor() {
             }
         }
         val derivationLib = DerivationLib(targetClass)
-        derivationLib.parseFields()
-        derivationLib.genGetterAndSetter()
-        derivationLib.genConstructors()
-        TargetClassBuilder(targetClass, derivationLib).build()
+        try {
+            derivationLib.parseFields()
+            derivationLib.genGetterAndSetter()
+            derivationLib.genConstructors()
+            TargetClassBuilder(targetClass, derivationLib).build()
+        } catch (e: Exception) {
+            Logger.logParsingError(element, Derivation::class.java, e)
+        }
     }
 }
