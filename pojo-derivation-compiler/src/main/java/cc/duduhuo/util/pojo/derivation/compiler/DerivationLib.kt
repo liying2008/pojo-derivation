@@ -2,7 +2,7 @@ package cc.duduhuo.util.pojo.derivation.compiler
 
 import cc.duduhuo.util.pojo.derivation.annotation.ConstructorType
 import cc.duduhuo.util.pojo.derivation.compiler.entity.Field
-import cc.duduhuo.util.pojo.derivation.compiler.util.ReflectUtils
+import com.bennyhuo.aptutils.AptContext
 import com.bennyhuo.aptutils.types.asJavaTypeName
 import com.bennyhuo.aptutils.types.simpleName
 import com.squareup.javapoet.*
@@ -24,13 +24,13 @@ class DerivationLib(private val targetClass: TargetClass) {
 
 
     fun parseFields() {
+        val elementUtils = AptContext.elements
         val sourceTypes = targetClass.sourceTypes
         val excludePropertyAnnotations = targetClass.excludePropertyAnnotations.map {
             it.toString()
         }
         for (sourceType in sourceTypes) {
             val enclosedElements = sourceType.enclosedElements
-            ReflectUtils.getVariableInitialValue(sourceType)
             enclosedElements.forEach { element ->
                 // Logger.warn(element.simpleName.toString())
                 if (element.kind == ElementKind.FIELD) {
@@ -52,6 +52,10 @@ class DerivationLib(private val targetClass: TargetClass) {
                     field.enclosingType = sourceType
                     val fieldSpecBuilder = FieldSpec.builder(typeName, name, *modifiers)
                     fieldSpecBuilder.addAnnotations(annotationSpecs)
+                    val javadoc = elementUtils.getDocComment(element)
+                    if (javadoc != null) {
+                        fieldSpecBuilder.addJavadoc(javadoc)
+                    }
                     field.spec = fieldSpecBuilder.build()
                     fieldList[name] = field
                 }

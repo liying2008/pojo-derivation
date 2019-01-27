@@ -4,15 +4,12 @@ import cc.duduhuo.util.pojo.derivation.annotation.ConstructorType
 import cc.duduhuo.util.pojo.derivation.annotation.Derivation
 import cc.duduhuo.util.pojo.derivation.annotation.Language
 import cc.duduhuo.util.pojo.derivation.compiler.builder.TargetClassBuilder
-import cc.duduhuo.util.pojo.derivation.compiler.util.MirrorUtils.getValueFieldOfClasses
 import com.bennyhuo.aptutils.AptContext
 import com.bennyhuo.aptutils.logger.Logger
 import com.bennyhuo.aptutils.types.packageName
 import com.bennyhuo.aptutils.types.simpleName
 import com.google.auto.common.MoreElements.getAnnotationMirror
-import com.google.auto.common.MoreTypes
 import com.google.auto.service.AutoService
-import com.google.common.annotations.VisibleForTesting
 import javax.annotation.processing.AbstractProcessor
 import javax.annotation.processing.ProcessingEnvironment
 import javax.annotation.processing.Processor
@@ -32,10 +29,6 @@ import javax.lang.model.element.TypeElement
  */
 @AutoService(Processor::class)
 class DerivationProcessor : AbstractProcessor() {
-    companion object {
-        @VisibleForTesting
-        private const val MISSING_SERVICES_ERROR = "No service interfaces provided for element!"
-    }
 
     private val supportedAnnotations = setOf(Derivation::class.java)
 
@@ -65,22 +58,15 @@ class DerivationProcessor : AbstractProcessor() {
         targetClass.packageName = element.packageName()
 
         val annotationMirror = getAnnotationMirror(element, Derivation::class.java).get()
-        val sourceTypesInterfaces = getValueFieldOfClasses(annotationMirror, "sourceTypes")
-        if (sourceTypesInterfaces.isEmpty()) {
-            Logger.error(element, MISSING_SERVICES_ERROR, annotationMirror)
-            return
-        }
-
-        for (sourceTypesInterface in sourceTypesInterfaces) {
-            val sourceType = MoreTypes.asTypeElement(sourceTypesInterface)
-            Logger.warn("sourceType: " + sourceType.qualifiedName)
-            targetClass.sourceTypes.add(sourceType)
-        }
-
         annotationMirror.elementValues.forEach { executableElement, annotationValue ->
             Logger.note(executableElement, annotationValue.value.toString())
             when (executableElement.simpleName()) {
                 "name" -> targetClass.simpleName = annotationValue.value.toString()
+                "sourceTypes" -> {
+                    targetClass.sourceTypes = annotationValue.value.toString().split(",").map {
+                        AptContext.elements.getTypeElement(it.trimEnd(*".class".toCharArray()))
+                    }
+                }
                 "includeProperties" -> {
                     targetClass.includeProperties = annotationValue.value.toString().split(",").map {
                         it.trimStart('"').trimEnd('"')
@@ -92,12 +78,8 @@ class DerivationProcessor : AbstractProcessor() {
                     }
                 }
                 "excludePropertyAnnotations" -> {
-                    val excludePropertyAnnotationsInterfaces =
-                        getValueFieldOfClasses(annotationMirror, "excludePropertyAnnotations")
-                    for (excludePropertyAnnotationsInterface in excludePropertyAnnotationsInterfaces) {
-                        val excludePropertyAnnotation = MoreTypes.asTypeElement(excludePropertyAnnotationsInterface)
-                        Logger.warn("excludePropertyAnnotation: " + excludePropertyAnnotation.qualifiedName)
-                        targetClass.excludePropertyAnnotations.add(excludePropertyAnnotation)
+                    targetClass.excludePropertyAnnotations = annotationValue.value.toString().split(",").map {
+                        AptContext.elements.getTypeElement(it.trimEnd(*".class".toCharArray()))
                     }
                 }
                 "constructorTypes" -> {

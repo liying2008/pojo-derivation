@@ -2,7 +2,6 @@ package cc.duduhuo.util.pojo.derivation.sample.pojo;
 
 import cc.duduhuo.util.pojo.derivation.annotation.ConstructorType;
 import cc.duduhuo.util.pojo.derivation.annotation.Derivation;
-import cc.duduhuo.util.pojo.derivation.annotation.Language;
 import cc.duduhuo.util.pojo.derivation.sample.anno.TestAnno1;
 
 /**

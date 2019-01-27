@@ -13,6 +13,9 @@ import cc.duduhuo.util.pojo.derivation.sample.anno.TestAnno2;
  */
 @TestAnno1("TestA")
 public final class TestA {
+    /**
+     * Doc: name
+     */
     @TestAnno1("TestA")
     @TestAnno2(name = "name", value = 24)
     private String name;
@@ -21,6 +24,9 @@ public final class TestA {
     @TestAnno2(name = "age", value = 25)
     private int age = 20;
 
+    /**
+     * Doc: isMale
+     */
     @TestAnno1("TestA")
     @TestAnno2(name = "isMale", value = 26)
     private boolean isMale = true;

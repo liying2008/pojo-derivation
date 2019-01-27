@@ -12,6 +12,9 @@ import cc.duduhuo.util.pojo.derivation.sample.anno.TestAnno2
  * =======================================================
  */
 class KotlinTestA {
+    /**
+     * Kotlin doc: name
+     */
     @TestAnno1("TestA")
     @TestAnno2(name = "name", value = 24)
     var name: String? = null

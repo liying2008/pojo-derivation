@@ -15,10 +15,10 @@ import javax.lang.model.element.TypeElement
 class TargetClass {
     lateinit var simpleName: String
     var packageName = ""
-    var sourceTypes = mutableListOf<TypeElement>()
+    var sourceTypes = listOf<TypeElement>()
     var includeProperties = listOf<String>()
     var excludeProperties = listOf<String>()
-    var excludePropertyAnnotations = mutableListOf<TypeElement>()
+    var excludePropertyAnnotations = listOf<TypeElement>()
     var constructorTypes = listOf(ConstructorType.NO_ARGS, ConstructorType.ALL_ARGS)
     var languages = listOf(Language.JAVA)
 }
