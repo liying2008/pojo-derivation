@@ -21,6 +21,9 @@ class TargetClassBuilder(
     private val derivationLib: DerivationLib
 ) {
 
+    /**
+     * 生成目标文件
+     */
     fun build() {
 
         val targetClassBuild = TypeSpec.classBuilder(targetClass.simpleName).addModifiers(Modifier.PUBLIC)

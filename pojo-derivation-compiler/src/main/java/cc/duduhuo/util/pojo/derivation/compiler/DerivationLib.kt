@@ -28,6 +28,9 @@ class DerivationLib(private val targetClass: TargetClass) {
     val methodList = mutableListOf<MethodSpec>()
 
 
+    /**
+     * 解析 Field
+     */
     fun parseFields() {
         val elementUtils = AptContext.elements
         val sourceTypes = targetClass.sourceTypes
@@ -79,6 +82,12 @@ class DerivationLib(private val targetClass: TargetClass) {
         filterFields()
     }
 
+    /**
+     * 添加初始值
+     *
+     * @param element VariableElement
+     * @param fieldSpecBuilder FieldSpec.Builder
+     */
     private fun addInitValue(element: VariableElement, fieldSpecBuilder: FieldSpec.Builder) {
         val annotation = element.getAnnotation(DerivationField::class.java) ?: return
         val initialValue = annotation.initialValue ?: return
@@ -232,6 +241,13 @@ class DerivationLib(private val targetClass: TargetClass) {
         }
     }
 
+    /**
+     * 根据类型获取对应的初始值
+     *
+     * @param typeName 类型名称
+     *
+     * @return 初始值
+     */
     private fun getInitValueByTypeName(typeName: TypeName): Any? {
         return when (typeName) {
             TypeName.BOOLEAN -> false
@@ -242,6 +258,14 @@ class DerivationLib(private val targetClass: TargetClass) {
         }
     }
 
+    /**
+     * 获取 set 方法名称
+     *
+     * @param typeName 类型名称
+     * @param name 属性名
+     *
+     * @return 该属性的 set 方法名
+     */
     private fun getSetterName(typeName: TypeName, name: String): String {
         val property = if ((typeName.isPrimitive || typeName.isBoxedPrimitive)
             && typeName.unbox() == TypeName.BOOLEAN
@@ -254,6 +278,14 @@ class DerivationLib(private val targetClass: TargetClass) {
         return "set${property.capitalize()}"
     }
 
+    /**
+     * 获取 get 方法名称
+     *
+     * @param typeName 类型名称
+     * @param name 属性名
+     *
+     * @return 该属性的 get 方法名
+     */
     private fun getGetterName(typeName: TypeName, name: String): String {
         return if (name.startsWith("is")) {
             when {
