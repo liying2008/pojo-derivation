@@ -59,7 +59,7 @@ public final class TestA {
     private String[] hobies = new String[]{};
 
     // 以 is 开头，但不是 Boolean/boolean 类型
-    @DerivationConstructorExclude
+    @DerivationConstructorExclude(classNames = "AAndB")
     @DerivationField(initialValue = "'a'")
     private Character isA;
 

@@ -22,6 +22,7 @@ import java.util.Map;
         sourceTypes = {TestA.class, TestB.class},
         excludeProperties = {"level2", "level3"},
         excludePropertyAnnotations = {TestAnno1.class},
+        excludeConstructorParams = {"number"},
         constructorTypes = {ConstructorType.NO_ARGS, ConstructorType.ALL_ARGS, ConstructorType.ALL_SOURCE_OBJS})
 public final class TestATestBCombine implements DerivationConfiguration {
 

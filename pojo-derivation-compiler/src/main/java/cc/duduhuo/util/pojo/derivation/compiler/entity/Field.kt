@@ -16,7 +16,7 @@ class Field(val name: String) {
     var combineType = false
 
     /** 是否需要在构造方法中排除此 field 的赋值 */
-    var constructorExclude = false
+    var excludedInConstructor = false
 
     /** 该 field 是否有初始的常量值（仅针对 final 修饰的 field） */
     var hasConstantValue = false
@@ -26,6 +26,9 @@ class Field(val name: String) {
 
     /** field 所在类的 Element */
     lateinit var enclosingType: TypeElement
+
+    /** field 所在类是否需要在构造方法中排除 */
+    var enclosingClassExcludedInConstructor = false
 
     /** FieldSpec */
     lateinit var spec: FieldSpec

@@ -37,7 +37,24 @@ class DerivationLib(val targetClass: TargetClass) {
             it.toString()
         }
         for (sourceType in sourceTypes) {
+            // 判断是否是 Combine 类
             val combineType = sourceType.getAnnotation(Derivation::class.java) != null
+            // 判断该类是否要在构造方法中排除
+            var enclosingClassExcludedInConstructor = false
+            if (sourceType.simpleName() in targetClass.excludeConstructorParams) {
+                enclosingClassExcludedInConstructor = true
+            }
+            if (!enclosingClassExcludedInConstructor) {
+                val constructorExcludeAnnotationInClass =
+                    sourceType.getAnnotation(DerivationConstructorExclude::class.java)
+                if (constructorExcludeAnnotationInClass != null) {
+                    val classNames = constructorExcludeAnnotationInClass.classNames
+                    if (classNames.isEmpty() || targetClass.simpleName in classNames) {
+                        enclosingClassExcludedInConstructor = true
+                    }
+                }
+            }
+            // 获取类中所有的元素
             val enclosedElements = sourceType.enclosedElements
             enclosedElements.forEach { element ->
                 // Logger.warn(element.simpleName.toString())
@@ -58,11 +75,27 @@ class DerivationLib(val targetClass: TargetClass) {
                         }
                     }
                     val field = Field(name)
-                    field.constructorExclude = element.getAnnotation(DerivationConstructorExclude::class.java) != null
+                    // 判断该 field 是否要在构造方法中排除
+                    field.excludedInConstructor = false
+                    if (name in targetClass.excludeConstructorParams) {
+                        field.excludedInConstructor = true
+                    }
+                    if (!field.excludedInConstructor) {
+                        val constructorExcludeAnnotation =
+                            element.getAnnotation(DerivationConstructorExclude::class.java)
+                        if (constructorExcludeAnnotation != null) {
+                            val classNames = constructorExcludeAnnotation.classNames
+                            if (classNames.isEmpty() || targetClass.simpleName in classNames) {
+                                field.excludedInConstructor = true
+                            }
+                        }
+                    }
+                    // 判断该 field 是否被 final 修饰且有初始值
                     field.hasConstantValue = element.constantValue != null
                     field.isFinal = Modifier.FINAL in modifiers
                     field.combineType = combineType
                     field.enclosingType = sourceType
+                    field.enclosingClassExcludedInConstructor = enclosingClassExcludedInConstructor
                     val fieldSpecBuilder = FieldSpec.builder(typeName, name, *modifiers)
                     fieldSpecBuilder.addAnnotations(annotationSpecs)
                     val javadoc = elementUtils.getDocComment(element)
@@ -152,7 +185,7 @@ class DerivationLib(val targetClass: TargetClass) {
         if (ConstructorType.NO_ARGS in constructorTypes) {
             val emptyConstructorBuilder = MethodSpec.constructorBuilder().addModifiers(Modifier.PUBLIC)
             fieldList.forEach { name, field ->
-                if (!field.constructorExclude && field.isFinal && !field.hasConstantValue) {
+                if (!field.excludedInConstructor && field.isFinal && !field.hasConstantValue) {
                     emptyConstructorBuilder.addStatement(
                         "this.\$L = \$L",
                         name,
@@ -168,7 +201,7 @@ class DerivationLib(val targetClass: TargetClass) {
             val codeBlocks = mutableListOf<CodeBlock>()
             fieldList.forEach { name, field ->
                 val spec = field.spec
-                if (field.constructorExclude) {
+                if (field.excludedInConstructor) {
                     return@forEach
                 }
                 if (spec.hasModifier(Modifier.STATIC)) {
@@ -192,7 +225,8 @@ class DerivationLib(val targetClass: TargetClass) {
         if (ConstructorType.ALL_SOURCE_OBJS in constructorTypes) {
             val parameterSpecs = mutableListOf<ParameterSpec>()
             val codeBlocks = mutableListOf<CodeBlock>()
-            val groupedField = fieldList.values.filterNot { it.combineType }.groupBy { it.enclosingType }
+            val groupedField = fieldList.values.filterNot { it.combineType || it.enclosingClassExcludedInConstructor }
+                .groupBy { it.enclosingType }
             groupedField.forEach { enclosingType, fields ->
                 val sourceTypeVar = enclosingType.simpleName().decapitalize()
                 parameterSpecs.add(
@@ -203,7 +237,7 @@ class DerivationLib(val targetClass: TargetClass) {
                 )
                 for (field in fields) {
                     val spec = field.spec
-                    if (field.constructorExclude) {
+                    if (field.excludedInConstructor) {
                         continue
                     }
                     if (spec.hasModifier(Modifier.STATIC)) {

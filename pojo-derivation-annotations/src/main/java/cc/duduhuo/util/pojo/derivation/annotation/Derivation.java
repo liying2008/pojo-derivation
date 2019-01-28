@@ -43,6 +43,12 @@ public @interface Derivation {
     String[] excludeProperties() default {};
 
     /**
+     * 需要排除的构造方法中的参数
+     * 功能类似于：{@link DerivationConstructorExclude}
+     */
+    String[] excludeConstructorParams() default {};
+
+    /**
      * 需统一排除的属性注解
      */
     Class<?>[] excludePropertyAnnotations() default {};
