@@ -13,7 +13,6 @@ import com.squareup.javapoet.*
 import javax.lang.model.element.ElementKind
 import javax.lang.model.element.Modifier
 import javax.lang.model.element.VariableElement
-import javax.lang.model.type.TypeKind
 
 /**
  * =======================================================
@@ -23,7 +22,7 @@ import javax.lang.model.type.TypeKind
  * Remarks:
  * =======================================================
  */
-class DerivationLib(private val targetClass: TargetClass) {
+class DerivationLib(val targetClass: TargetClass) {
     val fieldList = mutableMapOf<String, Field>()
     val methodList = mutableListOf<MethodSpec>()
 
@@ -54,9 +53,7 @@ class DerivationLib(private val targetClass: TargetClass) {
                     val annotationSpecs = mutableListOf<AnnotationSpec>()
                     element.annotationMirrors.forEach {
                         val annotationName = it.annotationType.toString()
-                        if (annotationName !in excludePropertyAnnotations
-                            && annotationName != DerivationField::class.java.canonicalName
-                        ) {
+                        if (annotationName !in excludePropertyAnnotations) {
                             annotationSpecs.add(AnnotationSpec.get(it))
                         }
                     }
@@ -90,13 +87,9 @@ class DerivationLib(private val targetClass: TargetClass) {
      */
     private fun addInitValue(element: VariableElement, fieldSpecBuilder: FieldSpec.Builder) {
         val annotation = element.getAnnotation(DerivationField::class.java) ?: return
-        val initialValue = annotation.initialValue ?: return
+        val initialValue = annotation.initialValue
         if (element.asType().isSameTypeWith(String::class.java)) {
             fieldSpecBuilder.initializer("\$S", initialValue)
-        } else if (element.asType().isSameTypeWith(Character::class.java) ||
-            element.asType().kind == TypeKind.CHAR
-        ) {
-            fieldSpecBuilder.initializer("'\$L'", initialValue)
         } else {
             fieldSpecBuilder.initializer("\$L", initialValue)
         }

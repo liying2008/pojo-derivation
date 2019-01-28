@@ -1,6 +1,7 @@
 package cc.duduhuo.util.pojo.derivation.compiler
 
 import cc.duduhuo.util.pojo.derivation.annotation.ConstructorType
+import cc.duduhuo.util.pojo.derivation.annotation.Derivation
 import cc.duduhuo.util.pojo.derivation.annotation.Language
 import javax.lang.model.element.TypeElement
 
@@ -29,7 +30,7 @@ class TargetClass {
     var excludeProperties = listOf<String>()
 
     /** 需要排除的注解列表 */
-    var excludePropertyAnnotations = listOf<TypeElement>()
+    var excludePropertyAnnotations = mutableListOf<TypeElement>()
 
     /** 需要生成的构造方法种类 */
     var constructorTypes = listOf(ConstructorType.NO_ARGS, ConstructorType.ALL_ARGS)

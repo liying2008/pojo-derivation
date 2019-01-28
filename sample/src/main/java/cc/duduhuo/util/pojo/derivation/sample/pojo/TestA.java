@@ -60,12 +60,12 @@ public final class TestA {
 
     // 以 is 开头，但不是 Boolean/boolean 类型
     @DerivationConstructorExclude
-    @DerivationField(initialValue = "a")
+    @DerivationField(initialValue = "'a'")
     private Character isA;
 
     // 以 set 开头的变量
     @DerivationConstructorExclude
-    @DerivationField(initialValue = "b")
+    @DerivationField(initialValue = "9")
     private char setB;
 
     public TestA(char finalVar1, String name, int age, boolean isMale, int level, String[] hobies) {

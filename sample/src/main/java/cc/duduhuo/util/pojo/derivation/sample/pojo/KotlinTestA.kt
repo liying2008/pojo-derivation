@@ -40,6 +40,6 @@ class KotlinTestA {
     @TestAnno2(name = "hobies", value = 29)
     var hobies: Array<String> = arrayOf()
 
-    @DerivationField(initialValue = "a")
+    @DerivationField(initialValue = "'a'")
     var aChar: Char = 'a'
 }

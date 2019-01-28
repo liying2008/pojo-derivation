@@ -1,7 +1,6 @@
 package cc.duduhuo.util.pojo.derivation.compiler.builder
 
 import cc.duduhuo.util.pojo.derivation.compiler.DerivationLib
-import cc.duduhuo.util.pojo.derivation.compiler.TargetClass
 import com.bennyhuo.aptutils.utils.writeToFile
 import com.squareup.javapoet.JavaFile
 import com.squareup.javapoet.TypeSpec
@@ -16,16 +15,13 @@ import javax.lang.model.element.Modifier
  * Remarks:
  * =======================================================
  */
-class TargetClassBuilder(
-    private val targetClass: TargetClass,
-    private val derivationLib: DerivationLib
-) {
+class TargetClassBuilder(private val derivationLib: DerivationLib) {
 
     /**
      * 生成目标文件
      */
     fun build() {
-
+        val targetClass = derivationLib.targetClass
         val targetClassBuild = TypeSpec.classBuilder(targetClass.simpleName).addModifiers(Modifier.PUBLIC)
 
         val fieldSpecs = derivationLib.fieldList.values.map {

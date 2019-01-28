@@ -1,8 +1,6 @@
 package cc.duduhuo.util.pojo.derivation.compiler
 
-import cc.duduhuo.util.pojo.derivation.annotation.ConstructorType
-import cc.duduhuo.util.pojo.derivation.annotation.Derivation
-import cc.duduhuo.util.pojo.derivation.annotation.Language
+import cc.duduhuo.util.pojo.derivation.annotation.*
 import cc.duduhuo.util.pojo.derivation.compiler.builder.TargetClassBuilder
 import com.bennyhuo.aptutils.AptContext
 import com.bennyhuo.aptutils.logger.Logger
@@ -54,9 +52,13 @@ class DerivationProcessor : AbstractProcessor() {
     }
 
     private fun processElement(element: TypeElement) {
+        val elements = AptContext.elements
         val targetClass = TargetClass()
         targetClass.packageName = element.packageName()
         targetClass.sourceTypes.add(element)
+        targetClass.excludePropertyAnnotations.add(elements.getTypeElement(Derivation::class.java.canonicalName))
+        targetClass.excludePropertyAnnotations.add(elements.getTypeElement(DerivationField::class.java.canonicalName))
+        targetClass.excludePropertyAnnotations.add(elements.getTypeElement(DerivationConstructorExclude::class.java.canonicalName))
 
         val annotationMirror = getAnnotationMirror(element, Derivation::class.java).get()
         annotationMirror.elementValues.forEach { executableElement, annotationValue ->
@@ -79,9 +81,9 @@ class DerivationProcessor : AbstractProcessor() {
                     }
                 }
                 "excludePropertyAnnotations" -> {
-                    targetClass.excludePropertyAnnotations = annotationValue.value.toString().split(",").map {
+                    targetClass.excludePropertyAnnotations.addAll(annotationValue.value.toString().split(",").map {
                         AptContext.elements.getTypeElement(it.trimEnd(*".class".toCharArray()))
-                    }
+                    })
                 }
                 "constructorTypes" -> {
                     targetClass.constructorTypes = annotationValue.value.toString().split(",").map {
@@ -101,7 +103,7 @@ class DerivationProcessor : AbstractProcessor() {
             derivationLib.parseFields()
             derivationLib.genGetterAndSetter()
             derivationLib.genConstructors()
-            TargetClassBuilder(targetClass, derivationLib).build()
+            TargetClassBuilder(derivationLib).build()
         } catch (e: Exception) {
             Logger.logParsingError(element, Derivation::class.java, e)
         }
