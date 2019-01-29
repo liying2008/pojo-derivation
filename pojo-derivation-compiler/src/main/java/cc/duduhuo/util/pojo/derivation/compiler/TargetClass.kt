@@ -2,6 +2,7 @@ package cc.duduhuo.util.pojo.derivation.compiler
 
 import cc.duduhuo.util.pojo.derivation.annotation.ConstructorType
 import cc.duduhuo.util.pojo.derivation.annotation.Language
+import com.bennyhuo.aptutils.types.asElement
 import javax.lang.model.element.TypeElement
 
 /**
@@ -22,6 +23,12 @@ class TargetClass {
     /** 生成类所在包 */
     var packageName = ""
 
+    /** 生成类需要继承的超类 */
+    var superClass: TypeElement = Object::class.java.asElement() as TypeElement
+
+    /** 生成类需要实现的接口 */
+    var superInterfaces = listOf<TypeElement>()
+
     /** 源类型 */
     var sourceTypes = mutableListOf<TypeElement>()
 
@@ -39,6 +46,9 @@ class TargetClass {
 
     /** 需要生成的构造方法种类 */
     var constructorTypes = listOf(ConstructorType.NO_ARGS, ConstructorType.ALL_ARGS)
+
+    /** Field 初始化 */
+    var initializers = mutableMapOf<String, String>()
 
     /** 生成类的语言（JAVA or KOTLIN） */
     var languages = listOf(Language.JAVA)

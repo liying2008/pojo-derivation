@@ -102,7 +102,7 @@ class DerivationLib(val targetClass: TargetClass) {
                     if (javadoc != null) {
                         fieldSpecBuilder.addJavadoc(javadoc)
                     }
-                    addInitValue(element, fieldSpecBuilder)
+                    addInitValue(name, element, fieldSpecBuilder)
                     field.spec = fieldSpecBuilder.build()
                     fieldList[name] = field
                 }
@@ -115,12 +115,21 @@ class DerivationLib(val targetClass: TargetClass) {
     /**
      * 添加初始值
      *
+     * @param name field name
      * @param element VariableElement
      * @param fieldSpecBuilder FieldSpec.Builder
      */
-    private fun addInitValue(element: VariableElement, fieldSpecBuilder: FieldSpec.Builder) {
-        val annotation = element.getAnnotation(DerivationField::class.java) ?: return
-        val initialValue = annotation.initialValue
+    private fun addInitValue(name: String, element: VariableElement, fieldSpecBuilder: FieldSpec.Builder) {
+        var initialValue: String? = null
+        val initializers = targetClass.initializers
+        if (name in initializers) {
+            initialValue = initializers[name]
+        }
+        if (initialValue == null) {
+            val annotation = element.getAnnotation(DerivationField::class.java) ?: return
+            initialValue = annotation.initialValue
+        }
+
         if (element.asType().isSameTypeWith(String::class.java)) {
             fieldSpecBuilder.initializer("\$S", initialValue)
         } else {

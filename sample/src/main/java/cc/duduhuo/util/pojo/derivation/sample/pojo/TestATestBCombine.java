@@ -4,6 +4,10 @@ import cc.duduhuo.util.pojo.derivation.annotation.ConstructorType;
 import cc.duduhuo.util.pojo.derivation.annotation.Derivation;
 import cc.duduhuo.util.pojo.derivation.annotation.DerivationField;
 import cc.duduhuo.util.pojo.derivation.sample.anno.TestAnno1;
+import cc.duduhuo.util.pojo.derivation.sample.api.TestInterface;
+import cc.duduhuo.util.pojo.derivation.sample.ext.SuperClass1;
+
+import java.io.Serializable;
 
 /**
  * =======================================================
@@ -15,10 +19,13 @@ import cc.duduhuo.util.pojo.derivation.sample.anno.TestAnno1;
  */
 @Derivation(
         name = "AAndB",
+        superClass = SuperClass1.class,
+        superInterfaces = {Serializable.class, TestInterface.class},
         sourceTypes = {TestA.class, TestB.class, TestCs.class},
         excludeProperties = {"level2", "level3"},
         excludePropertyAnnotations = {TestAnno1.class},
         excludeConstructorParams = {"number"},
+        initializers = {"finalVar2:finalVar2", "score:0.98"},
         constructorTypes = {ConstructorType.NO_ARGS, ConstructorType.ALL_ARGS, ConstructorType.ALL_SOURCE_OBJS})
 public final class TestATestBCombine {
 

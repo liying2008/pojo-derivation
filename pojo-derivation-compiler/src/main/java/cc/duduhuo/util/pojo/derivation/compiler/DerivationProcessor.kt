@@ -69,6 +69,14 @@ class DerivationProcessor : AbstractProcessor() {
             when (executableElement.simpleName()) {
                 "name" -> targetClass.simpleName = annotationValue.value.toString()
                 "sourceTypes" -> targetClass.sourceTypes.addAll(getTypeElementListFromAnnotationValue(annotationValue))
+                "superClass" -> {
+                    val superClass = getTypeElementFromAnnotationValue(annotationValue)
+                    if (superClass != null) {
+                        targetClass.superClass = superClass
+                    }
+                }
+                "superInterfaces" -> targetClass.superInterfaces =
+                    getTypeElementListFromAnnotationValue(annotationValue)
                 "includeProperties" -> targetClass.includeProperties = getStringListFromAnnotationValue(annotationValue)
                 "excludeProperties" -> targetClass.excludeProperties = getStringListFromAnnotationValue(annotationValue)
                 "excludeConstructorParams" -> targetClass.excludeConstructorParams =
@@ -77,13 +85,27 @@ class DerivationProcessor : AbstractProcessor() {
                     targetClass.excludePropertyAnnotations.addAll(getTypeElementListFromAnnotationValue(annotationValue))
                 }
                 "constructorTypes" -> {
-                    targetClass.constructorTypes = annotationValue.value.toString().split(",").map {
-                        ConstructorType.valueOf(it.replaceFirst("cc.duduhuo.util.pojo.derivation.annotation.ConstructorType.", ""))
+                    targetClass.constructorTypes =
+                        annotationValue.value.toString().split(",").filter { it.isNotEmpty() }.map {
+                            ConstructorType.valueOf(
+                                it.replaceFirst(
+                                    "cc.duduhuo.util.pojo.derivation.annotation.ConstructorType.",
+                                    ""
+                                )
+                            )
+                        }
+                }
+                "initializers" -> {
+                    val initializersStringList = getStringListFromAnnotationValue(annotationValue)
+                    initializersStringList.forEach {
+                        val index = it.indexOf(":")
+                        if (index > 0 && index != it.lastIndex) {
+                            targetClass.initializers[it.substring(0, index)] = it.substring(index + 1)
+                        }
                     }
                 }
-
                 "languages" -> {
-                    targetClass.languages = annotationValue.value.toString().split(",").map {
+                    targetClass.languages = annotationValue.value.toString().split(",").filter { it.isNotEmpty() }.map {
                         Language.valueOf(it.replaceFirst("cc.duduhuo.util.pojo.derivation.annotation.Language.", ""))
                     }
                 }
@@ -101,17 +123,35 @@ class DerivationProcessor : AbstractProcessor() {
     }
 
     private fun getStringListFromAnnotationValue(annotationValue: AnnotationValue): List<String> {
-        return annotationValue.value.toString().split(",").map {
+        return annotationValue.value.toString().split(",").filter { it.isNotEmpty() }.map {
             // 去掉字符串前后的 "
             val str = it.substring(1).substring(0, it.length - 2)
             str
         }
     }
 
-    private fun getTypeElementListFromAnnotationValue(annotationValue: AnnotationValue): List<TypeElement> {
-        return annotationValue.value.toString().split(",").map {
+    private fun getTypeElementFromAnnotationValue(annotationValue: AnnotationValue): TypeElement? {
+        val str = annotationValue.value.toString()
+        if (str.isEmpty()) {
+            return null
+        }
+        val classname = if (str.endsWith(".class")) {
             // 去掉末尾的 .class
-            val classname = it.substring(0, it.length - 6)
+            str.substring(0, str.length - 6)
+        } else {
+            str
+        }
+        return AptContext.elements.getTypeElement(classname)
+    }
+
+    private fun getTypeElementListFromAnnotationValue(annotationValue: AnnotationValue): List<TypeElement> {
+        return annotationValue.value.toString().split(",").filter { it.isNotEmpty() }.map {
+            val classname = if (it.endsWith(".class")) {
+                // 去掉末尾的 .class
+                it.substring(0, it.length - 6)
+            } else {
+                it
+            }
             AptContext.elements.getTypeElement(classname)
         }
     }

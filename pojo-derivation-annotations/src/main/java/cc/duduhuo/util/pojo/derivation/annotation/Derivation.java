@@ -25,6 +25,16 @@ public @interface Derivation {
     String name();
 
     /**
+     * 需要继承的超类
+     */
+    Class<?> superClass() default Object.class;
+
+    /**
+     * 需要实现的接口
+     */
+    Class<?>[] superInterfaces() default {};
+
+    /**
      * 源 POJO 类型，将会按照数组的顺序逐个解析
      * 排在前面的类的优先级高，即同名属性优先采用前面的类中的
      */
@@ -57,6 +67,13 @@ public @interface Derivation {
      * 构造方法类型
      */
     ConstructorType[] constructorTypes() default {ConstructorType.NO_ARGS, ConstructorType.ALL_ARGS};
+
+    /**
+     * Field 初始化。格式“fieldName:initValue”,如：{"age:18", "name:zhangsan"}
+     * 功能类似于：{@link DerivationField#initialValue()}
+     * 此选项优先级高于 {@link DerivationField#initialValue()}
+     */
+    String[] initializers() default {};
 
     /**
      * 生成的 POJO 类的语言

@@ -3,6 +3,7 @@ package cc.duduhuo.util.pojo.derivation.sample.pojo
 import cc.duduhuo.util.pojo.derivation.annotation.ConstructorType
 import cc.duduhuo.util.pojo.derivation.annotation.Derivation
 import cc.duduhuo.util.pojo.derivation.sample.anno.TestAnno1
+import cc.duduhuo.util.pojo.derivation.sample.ext.SuperClass1
 
 /**
  * =======================================================
@@ -14,6 +15,7 @@ import cc.duduhuo.util.pojo.derivation.sample.anno.TestAnno1
  */
 @Derivation(
     name = "KotlinAAndKotlinB",
+    superClass = SuperClass1::class,
     sourceTypes = [KotlinTestA::class, KotlinTestB::class],
     excludeProperties = ["level", "level2", "level3"],
     excludePropertyAnnotations = [TestAnno1::class],
