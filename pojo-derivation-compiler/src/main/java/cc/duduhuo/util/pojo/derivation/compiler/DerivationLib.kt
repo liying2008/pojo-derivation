@@ -48,8 +48,8 @@ class DerivationLib(val targetClass: TargetClass) {
                 val constructorExcludeAnnotationInClass =
                     sourceType.getAnnotation(DerivationConstructorExclude::class.java)
                 if (constructorExcludeAnnotationInClass != null) {
-                    val classNames = constructorExcludeAnnotationInClass.classNames
-                    if (classNames.isEmpty() || targetClass.simpleName in classNames) {
+                    val classnames = constructorExcludeAnnotationInClass.classnames
+                    if (classnames.isEmpty() || targetClass.simpleName in classnames) {
                         enclosingClassExcludedInConstructor = true
                     }
                 }
@@ -84,8 +84,8 @@ class DerivationLib(val targetClass: TargetClass) {
                         val constructorExcludeAnnotation =
                             element.getAnnotation(DerivationConstructorExclude::class.java)
                         if (constructorExcludeAnnotation != null) {
-                            val classNames = constructorExcludeAnnotation.classNames
-                            if (classNames.isEmpty() || targetClass.simpleName in classNames) {
+                            val classnames = constructorExcludeAnnotation.classnames
+                            if (classnames.isEmpty() || targetClass.simpleName in classnames) {
                                 field.excludedInConstructor = true
                             }
                         }
@@ -139,15 +139,17 @@ class DerivationLib(val targetClass: TargetClass) {
             includeProperties.forEach {
                 filteredMap[it] = fieldList.getValue(it)
             }
+            fieldList.clear()
+            fieldList.putAll(filteredMap)
         } else if (excludeProperties.isNotEmpty()) {
             fieldList.forEach { name, _ ->
                 if (name !in excludeProperties) {
                     filteredMap[name] = fieldList.getValue(name)
                 }
             }
+            fieldList.clear()
+            fieldList.putAll(filteredMap)
         }
-        fieldList.clear()
-        fieldList.putAll(filteredMap)
     }
 
     /**
@@ -213,13 +215,16 @@ class DerivationLib(val targetClass: TargetClass) {
                 parameterSpecs.add(ParameterSpec.builder(spec.type, name).build())
                 codeBlocks.add(CodeBlock.of("this.\$L = \$L", name, name))
             }
-            val fullConstructorBuilder = MethodSpec.constructorBuilder().addModifiers(Modifier.PUBLIC)
-                .addParameters(parameterSpecs)
+            if (parameterSpecs.isNotEmpty()) {
+                // 构造方法有参数
+                val fullConstructorBuilder = MethodSpec.constructorBuilder().addModifiers(Modifier.PUBLIC)
+                    .addParameters(parameterSpecs)
 
-            codeBlocks.forEach {
-                fullConstructorBuilder.addStatement(it)
+                codeBlocks.forEach {
+                    fullConstructorBuilder.addStatement(it)
+                }
+                methodList.add(fullConstructorBuilder.build())
             }
-            methodList.add(fullConstructorBuilder.build())
         }
         // 源对象构造方法
         if (ConstructorType.ALL_SOURCE_OBJS in constructorTypes) {
@@ -259,12 +264,14 @@ class DerivationLib(val targetClass: TargetClass) {
                     codeBlocks.add(codeBock)
                 }
             }
-            val sourceObjConstructor = MethodSpec.constructorBuilder().addModifiers(Modifier.PUBLIC)
-                .addParameters(parameterSpecs)
-            codeBlocks.forEach {
-                sourceObjConstructor.addStatement(it)
+            if (parameterSpecs.isNotEmpty()) {
+                val sourceObjConstructor = MethodSpec.constructorBuilder().addModifiers(Modifier.PUBLIC)
+                    .addParameters(parameterSpecs)
+                codeBlocks.forEach {
+                    sourceObjConstructor.addStatement(it)
+                }
+                methodList.add(sourceObjConstructor.build())
             }
-            methodList.add(sourceObjConstructor.build())
         }
     }
 

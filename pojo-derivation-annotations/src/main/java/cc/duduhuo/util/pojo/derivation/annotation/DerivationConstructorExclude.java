@@ -24,5 +24,5 @@ public @interface DerivationConstructorExclude {
      * 表示如下类中的构造方法中不含该属性/类对象
      * 空：表示生成的所有类的构造方法中都不含该属性/类对象
      */
-    String[] classNames() default {};
+    String[] classnames() default {};
 }

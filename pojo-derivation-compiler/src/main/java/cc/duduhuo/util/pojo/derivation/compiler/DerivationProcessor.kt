@@ -68,9 +68,7 @@ class DerivationProcessor : AbstractProcessor() {
             Logger.note(executableElement, annotationValue.value.toString())
             when (executableElement.simpleName()) {
                 "name" -> targetClass.simpleName = annotationValue.value.toString()
-                "sourceTypes" -> {
-                    targetClass.sourceTypes.addAll(getTypeElementListFromAnnotationValue(annotationValue))
-                }
+                "sourceTypes" -> targetClass.sourceTypes.addAll(getTypeElementListFromAnnotationValue(annotationValue))
                 "includeProperties" -> targetClass.includeProperties = getStringListFromAnnotationValue(annotationValue)
                 "excludeProperties" -> targetClass.excludeProperties = getStringListFromAnnotationValue(annotationValue)
                 "excludeConstructorParams" -> targetClass.excludeConstructorParams =
@@ -80,13 +78,13 @@ class DerivationProcessor : AbstractProcessor() {
                 }
                 "constructorTypes" -> {
                     targetClass.constructorTypes = annotationValue.value.toString().split(",").map {
-                        ConstructorType.valueOf(it.trimStart(*"cc.duduhuo.util.pojo.derivation.annotation.ConstructorType.".toCharArray()))
+                        ConstructorType.valueOf(it.replaceFirst("cc.duduhuo.util.pojo.derivation.annotation.ConstructorType.", ""))
                     }
                 }
 
                 "languages" -> {
                     targetClass.languages = annotationValue.value.toString().split(",").map {
-                        Language.valueOf(it.trimStart(*"cc.duduhuo.util.pojo.derivation.annotation.Language.".toCharArray()))
+                        Language.valueOf(it.replaceFirst("cc.duduhuo.util.pojo.derivation.annotation.Language.", ""))
                     }
                 }
             }
@@ -104,13 +102,17 @@ class DerivationProcessor : AbstractProcessor() {
 
     private fun getStringListFromAnnotationValue(annotationValue: AnnotationValue): List<String> {
         return annotationValue.value.toString().split(",").map {
-            it.trimStart('"').trimEnd('"')
+            // 去掉字符串前后的 "
+            val str = it.substring(1).substring(0, it.length - 2)
+            str
         }
     }
 
     private fun getTypeElementListFromAnnotationValue(annotationValue: AnnotationValue): List<TypeElement> {
         return annotationValue.value.toString().split(",").map {
-            AptContext.elements.getTypeElement(it.trimEnd(*".class".toCharArray()))
+            // 去掉末尾的 .class
+            val classname = it.substring(0, it.length - 6)
+            AptContext.elements.getTypeElement(classname)
         }
     }
 }
