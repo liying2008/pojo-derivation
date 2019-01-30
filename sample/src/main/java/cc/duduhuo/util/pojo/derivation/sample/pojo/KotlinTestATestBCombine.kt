@@ -17,8 +17,8 @@ import cc.duduhuo.util.pojo.derivation.sample.ext.SuperClass1
     name = "KotlinAAndKotlinB",
     superClass = SuperClass1::class,
     sourceTypes = [KotlinTestA::class, KotlinTestB::class],
-    excludeProperties = ["level", "level2", "level3"],
-    excludePropertyAnnotations = [TestAnno1::class],
+    excludeFields = ["level", "level2", "level3"],
+    excludeFieldAnnotations = [TestAnno1::class],
     constructorTypes = [ConstructorType.NO_ARGS, ConstructorType.ALL_ARGS, ConstructorType.ALL_SOURCE_OBJS]
 )
 class KotlinTestATestBCombine {

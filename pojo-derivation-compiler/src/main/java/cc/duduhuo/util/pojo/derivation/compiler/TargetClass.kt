@@ -14,8 +14,8 @@ import javax.lang.model.element.TypeElement
  * =======================================================
  */
 class TargetClass {
-    /** Combine 类完整名称 */
-    lateinit var combineClassName: String
+    /** Combine 类的 TypeElement */
+    lateinit var combineElement: TypeElement
 
     /** 生成的类名称 */
     lateinit var simpleName: String
@@ -33,13 +33,13 @@ class TargetClass {
     var sourceTypes = mutableListOf<TypeElement>()
 
     /** 需要包含的属性列表 */
-    var includeProperties = listOf<String>()
+    var includeFields = listOf<String>()
 
     /** 需要排除的属性列表 */
-    var excludeProperties = listOf<String>()
+    var excludeFields = listOf<String>()
 
     /** 需要排除的注解列表 */
-    var excludePropertyAnnotations = mutableListOf<TypeElement>()
+    var excludeFieldAnnotations = mutableListOf<TypeElement>()
 
     /** 需要排除的构造方法中的参数 */
     var excludeConstructorParams = listOf<String>()

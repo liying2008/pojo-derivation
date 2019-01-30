@@ -4,7 +4,6 @@ import cc.duduhuo.util.pojo.derivation.annotation.*
 import cc.duduhuo.util.pojo.derivation.compiler.builder.TargetClassBuilder
 import com.bennyhuo.aptutils.AptContext
 import com.bennyhuo.aptutils.logger.Logger
-import com.bennyhuo.aptutils.types.canonicalName
 import com.bennyhuo.aptutils.types.packageName
 import com.bennyhuo.aptutils.types.simpleName
 import com.google.auto.common.MoreElements.getAnnotationMirror
@@ -56,12 +55,12 @@ class DerivationProcessor : AbstractProcessor() {
     private fun processElement(element: TypeElement) {
         val elementUtils = AptContext.elements
         val targetClass = TargetClass()
-        targetClass.combineClassName = element.canonicalName()
+        targetClass.combineElement = element
         targetClass.packageName = element.packageName()
         targetClass.sourceTypes.add(element)
-        targetClass.excludePropertyAnnotations.add(elementUtils.getTypeElement(Derivation::class.java.canonicalName))
-        targetClass.excludePropertyAnnotations.add(elementUtils.getTypeElement(DerivationField::class.java.canonicalName))
-        targetClass.excludePropertyAnnotations.add(elementUtils.getTypeElement(DerivationConstructorExclude::class.java.canonicalName))
+        targetClass.excludeFieldAnnotations.add(elementUtils.getTypeElement(Derivation::class.java.canonicalName))
+        targetClass.excludeFieldAnnotations.add(elementUtils.getTypeElement(DerivationField::class.java.canonicalName))
+        targetClass.excludeFieldAnnotations.add(elementUtils.getTypeElement(DerivationConstructorExclude::class.java.canonicalName))
 
         val annotationMirror = getAnnotationMirror(element, Derivation::class.java).get()
         annotationMirror.elementValues.forEach { executableElement, annotationValue ->
@@ -77,12 +76,12 @@ class DerivationProcessor : AbstractProcessor() {
                 }
                 "superInterfaces" -> targetClass.superInterfaces =
                     getTypeElementListFromAnnotationValue(annotationValue)
-                "includeProperties" -> targetClass.includeProperties = getStringListFromAnnotationValue(annotationValue)
-                "excludeProperties" -> targetClass.excludeProperties = getStringListFromAnnotationValue(annotationValue)
+                "includeFields" -> targetClass.includeFields = getStringListFromAnnotationValue(annotationValue)
+                "excludeFields" -> targetClass.excludeFields = getStringListFromAnnotationValue(annotationValue)
                 "excludeConstructorParams" -> targetClass.excludeConstructorParams =
                     getStringListFromAnnotationValue(annotationValue)
-                "excludePropertyAnnotations" -> {
-                    targetClass.excludePropertyAnnotations.addAll(getTypeElementListFromAnnotationValue(annotationValue))
+                "excludeFieldAnnotations" -> {
+                    targetClass.excludeFieldAnnotations.addAll(getTypeElementListFromAnnotationValue(annotationValue))
                 }
                 "constructorTypes" -> {
                     targetClass.constructorTypes =
@@ -99,8 +98,10 @@ class DerivationProcessor : AbstractProcessor() {
                     val initializersStringList = getStringListFromAnnotationValue(annotationValue)
                     initializersStringList.forEach {
                         val index = it.indexOf(":")
-                        if (index > 0 && index != it.lastIndex) {
+                        if (index > 0) {
                             targetClass.initializers[it.substring(0, index)] = it.substring(index + 1)
+                        } else {
+                            Logger.warn(element, "$it: Invalid format!")
                         }
                     }
                 }

@@ -6,6 +6,7 @@ import cc.duduhuo.util.pojo.derivation.annotation.DerivationConstructorExclude
 import cc.duduhuo.util.pojo.derivation.annotation.DerivationField
 import cc.duduhuo.util.pojo.derivation.compiler.entity.Field
 import com.bennyhuo.aptutils.AptContext
+import com.bennyhuo.aptutils.logger.Logger
 import com.bennyhuo.aptutils.types.asJavaTypeName
 import com.bennyhuo.aptutils.types.isSameTypeWith
 import com.bennyhuo.aptutils.types.simpleName
@@ -33,7 +34,7 @@ class DerivationLib(val targetClass: TargetClass) {
     fun parseFields() {
         val elementUtils = AptContext.elements
         val sourceTypes = targetClass.sourceTypes
-        val excludePropertyAnnotations = targetClass.excludePropertyAnnotations.map {
+        val excludeFieldAnnotations = targetClass.excludeFieldAnnotations.map {
             it.toString()
         }
         for (sourceType in sourceTypes) {
@@ -70,7 +71,7 @@ class DerivationLib(val targetClass: TargetClass) {
                     val annotationSpecs = mutableListOf<AnnotationSpec>()
                     element.annotationMirrors.forEach {
                         val annotationName = it.annotationType.toString()
-                        if (annotationName !in excludePropertyAnnotations) {
+                        if (annotationName !in excludeFieldAnnotations) {
                             annotationSpecs.add(AnnotationSpec.get(it))
                         }
                     }
@@ -108,8 +109,35 @@ class DerivationLib(val targetClass: TargetClass) {
                 }
             }
         }
+        // 检查 Derivation 中的属性名称
+        checkDerivation()
         // 过滤 Fields
         filterFields()
+    }
+
+    /**
+     * 检查 Derivation 中填写的所有属性名称是否包含错误，如果有错误，则给出提示
+     */
+    private fun checkDerivation() {
+        val element = targetClass.combineElement
+        // 检查 includeFields
+        targetClass.includeFields.forEach {
+            if (it !in fieldList) {
+                Logger.warn(element, "includeFields: $it is NOT in the field list!")
+            }
+        }
+        // 检查 excludeFields
+        targetClass.excludeFields.forEach {
+            if (it !in fieldList) {
+                Logger.warn(element, "excludeFields: $it is NOT in the field list!")
+            }
+        }
+        // 检查 initializers
+        targetClass.initializers.forEach { name, _ ->
+            if (name !in fieldList) {
+                Logger.warn(element, "initializers: $name is NOT in the field list!")
+            }
+        }
     }
 
     /**
@@ -141,18 +169,18 @@ class DerivationLib(val targetClass: TargetClass) {
      * 过滤 Fields
      */
     private fun filterFields() {
-        val includeProperties = targetClass.includeProperties
-        val excludeProperties = targetClass.excludeProperties
+        val includeFields = targetClass.includeFields
+        val excludeFields = targetClass.excludeFields
         val filteredMap = mutableMapOf<String, Field>()
-        if (includeProperties.isNotEmpty()) {
-            includeProperties.forEach {
+        if (includeFields.isNotEmpty()) {
+            includeFields.forEach {
                 filteredMap[it] = fieldList.getValue(it)
             }
             fieldList.clear()
             fieldList.putAll(filteredMap)
-        } else if (excludeProperties.isNotEmpty()) {
+        } else if (excludeFields.isNotEmpty()) {
             fieldList.forEach { name, _ ->
-                if (name !in excludeProperties) {
+                if (name !in excludeFields) {
                     filteredMap[name] = fieldList.getValue(name)
                 }
             }

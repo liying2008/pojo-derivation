@@ -15,9 +15,9 @@ import cc.duduhuo.util.pojo.derivation.sample.anno.TestAnno1;
 @Derivation(
         name = "AAndKotlinB",
         sourceTypes = {TestA.class, KotlinTestB.class},
-        includeProperties = "number",
-        excludeProperties = {"level", "level2", "level3"},
-        excludePropertyAnnotations = {TestAnno1.class},
+        includeFields = {"number"},
+        excludeFields = {"level", "level2", "level3"},
+        excludeFieldAnnotations = {TestAnno1.class},
         constructorTypes = {ConstructorType.NO_ARGS, ConstructorType.ALL_ARGS, ConstructorType.ALL_SOURCE_OBJS})
 public class TestAKotlinBCombine {
 }

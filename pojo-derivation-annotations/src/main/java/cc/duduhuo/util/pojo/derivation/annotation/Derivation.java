@@ -44,13 +44,13 @@ public @interface Derivation {
      * 衍生类型需包含的属性列表
      * 默认为全部包含
      */
-    String[] includeProperties() default {};
+    String[] includeFields() default {};
 
     /**
      * 衍生类型需排除的属性列表
-     * 当 {@link Derivation#includeProperties()} 为空时才会生效
+     * 当 {@link Derivation#includeFields()} 为空时才会生效
      */
-    String[] excludeProperties() default {};
+    String[] excludeFields() default {};
 
     /**
      * 需要排除的构造方法中的参数
@@ -61,7 +61,7 @@ public @interface Derivation {
     /**
      * 需统一排除的属性注解
      */
-    Class<?>[] excludePropertyAnnotations() default {};
+    Class<?>[] excludeFieldAnnotations() default {};
 
     /**
      * 构造方法类型

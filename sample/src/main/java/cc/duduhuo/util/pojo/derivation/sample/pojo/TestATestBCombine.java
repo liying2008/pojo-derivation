@@ -22,10 +22,10 @@ import java.io.Serializable;
         superClass = SuperClass1.class,
         superInterfaces = {Serializable.class, TestInterface.class},
         sourceTypes = {TestA.class, TestB.class, TestCs.class},
-        excludeProperties = {"level2", "level3"},
-        excludePropertyAnnotations = {TestAnno1.class},
+        excludeFields = {"level2", "level3"},
+        excludeFieldAnnotations = {TestAnno1.class},
         excludeConstructorParams = {"number"},
-        initializers = {"finalVar2:finalVar2", "score:0.98"},
+        initializers = {"finalVar2:", "score:0.98", "a:b"},
         constructorTypes = {ConstructorType.NO_ARGS, ConstructorType.ALL_ARGS, ConstructorType.ALL_SOURCE_OBJS})
 public final class TestATestBCombine {
 
