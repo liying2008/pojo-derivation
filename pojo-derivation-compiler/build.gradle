@@ -9,7 +9,8 @@ dependencies {
     implementation project(':pojo-derivation-annotations')
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8"
     implementation 'com.google.auto:auto-common:0.10'
-    implementation 'com.google.auto.service:auto-service:1.0-rc4'
+    compileOnly 'com.google.auto.service:auto-service:1.0-rc4'
+    annotationProcessor 'com.google.auto.service:auto-service:1.0-rc4'
     implementation 'com.squareup:javapoet:1.11.1'
     implementation 'com.bennyhuo.aptutils:aptutils:1.7'
 }

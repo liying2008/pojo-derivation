@@ -8,7 +8,7 @@ version LIB_VERSION
 sourceCompatibility = 1.8
 
 dependencies {
-    implementation project(":pojo-derivation-annotations")
+    compileOnly project(":pojo-derivation-annotations")
     implementation project(":pojo-derivation-runtime")
     kapt project(":pojo-derivation-compiler")
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8"

@@ -18,8 +18,8 @@ class Field(val name: String) {
     /** 是否需要在构造方法中排除此 field 的赋值 */
     var excludedInConstructor = false
 
-    /** 该 field 是否有初始的常量值（仅针对 final 修饰的 field） */
-    var hasConstantValue = false
+    /** 该 field 初始的常量值（仅针对 final 修饰的 field） */
+    var constantValue: Any? = null
 
     /** 该 field 是否被 final 修饰 */
     var isFinal = false
@@ -30,6 +30,13 @@ class Field(val name: String) {
     /** field 所在类是否需要在构造方法中排除 */
     var enclosingClassExcludedInConstructor = false
 
+    /** field 所在类是否是 Kotlin 类 */
+    var isKotlinEnclosingType = false
+
     /** FieldSpec */
     lateinit var spec: FieldSpec
+
+    override fun toString(): String {
+        return "Field(name='$name', combineType=$combineType, excludedInConstructor=$excludedInConstructor, constantValue=$constantValue, isFinal=$isFinal, enclosingType=$enclosingType, enclosingClassExcludedInConstructor=$enclosingClassExcludedInConstructor, isKotlinEnclosingType=$isKotlinEnclosingType, spec=$spec)"
+    }
 }

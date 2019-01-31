@@ -1,6 +1,6 @@
 package cc.duduhuo.util.pojo.derivation.sample;
 
-import cc.duduhuo.util.pojo.derivation.sample.pojo.AAndB;
+import cc.duduhuo.util.pojo.derivation.sample.pojo.TestATestB;
 
 /**
  * =======================================================
@@ -13,7 +13,7 @@ import cc.duduhuo.util.pojo.derivation.sample.pojo.AAndB;
 public class Main {
     public static void main(String[] args) {
         System.out.println("Main");
-        AAndB aAndB = new AAndB();
+        TestATestB aAndB = new TestATestB();
         System.out.println(aAndB);
     }
 }

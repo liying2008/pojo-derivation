@@ -21,7 +21,11 @@ public final class TestB {
 
     private Double score;
 
-    private Boolean isSuccess;
+    private Boolean getA;
+    private Boolean setB;
+
+    private boolean getC;
+    private boolean setD;
 
     private Extra1 extra1;
 
@@ -76,11 +80,35 @@ public final class TestB {
         this.extra1 = extra1;
     }
 
-    public Boolean getSuccess() {
-        return isSuccess;
+    public Boolean getGetA() {
+        return getA;
     }
 
-    public void setSuccess(Boolean success) {
-        isSuccess = success;
+    public void setGetA(Boolean getA) {
+        this.getA = getA;
+    }
+
+    public Boolean getSetB() {
+        return setB;
+    }
+
+    public void setSetB(Boolean setB) {
+        this.setB = setB;
+    }
+
+    public boolean isGetC() {
+        return getC;
+    }
+
+    public void setGetC(boolean getC) {
+        this.getC = getC;
+    }
+
+    public boolean isSetD() {
+        return setD;
+    }
+
+    public void setSetD(boolean setD) {
+        this.setD = setD;
     }
 }

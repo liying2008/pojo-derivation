@@ -22,7 +22,6 @@ public final class TestA {
     @TestAnno2(name = "finalVar2", value = 22)
     public final String finalVar2 = "finalVar2";
 
-    @DerivationField(initialValue = "SV")
     @TestAnno2(name = "STATIC_VAR", value = 23)
     public static final String STATIC_VAR = "SV";
 
@@ -44,6 +43,12 @@ public final class TestA {
     @TestAnno1("TestA")
     @TestAnno2(name = "isMale", value = 26)
     private boolean isMale = true;
+
+    private boolean aaa;
+
+    private Boolean bbb;
+
+    private Boolean isCcc;
 
     @TestAnno1("TestA")
     @TestAnno2(name = "level", value = 27)
@@ -139,5 +144,29 @@ public final class TestA {
 
     public void setSetB(char setB) {
         this.setB = setB;
+    }
+
+    public boolean isAaa() {
+        return aaa;
+    }
+
+    public void setAaa(boolean aaa) {
+        this.aaa = aaa;
+    }
+
+    public Boolean getBbb() {
+        return bbb;
+    }
+
+    public void setBbb(Boolean bbb) {
+        this.bbb = bbb;
+    }
+
+    public Boolean getCcc() {
+        return isCcc;
+    }
+
+    public void setCcc(Boolean ccc) {
+        isCcc = ccc;
     }
 }

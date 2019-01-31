@@ -27,6 +27,10 @@ class DerivationLib(val targetClass: TargetClass) {
     val fieldList = mutableMapOf<String, Field>()
     val methodList = mutableListOf<MethodSpec>()
 
+    companion object {
+        @SuppressWarnings("unchecked")
+        val kotlinMetadata = Class.forName("kotlin.Metadata") as Class<Annotation>
+    }
 
     /**
      * 解析 Field
@@ -38,6 +42,8 @@ class DerivationLib(val targetClass: TargetClass) {
             it.toString()
         }
         for (sourceType in sourceTypes) {
+            // 判断是否是 Kotlin 类
+            val isKotlin = sourceType.getAnnotation(kotlinMetadata) != null
             // 判断是否是 Combine 类
             val combineType = sourceType.getAnnotation(Derivation::class.java) != null
             // 判断该类是否要在构造方法中排除
@@ -91,8 +97,8 @@ class DerivationLib(val targetClass: TargetClass) {
                             }
                         }
                     }
-                    // 判断该 field 是否被 final 修饰且有初始值
-                    field.hasConstantValue = element.constantValue != null
+                    field.isKotlinEnclosingType = isKotlin
+                    field.constantValue = element.constantValue
                     field.isFinal = Modifier.FINAL in modifiers
                     field.combineType = combineType
                     field.enclosingType = sourceType
@@ -148,20 +154,25 @@ class DerivationLib(val targetClass: TargetClass) {
      * @param fieldSpecBuilder FieldSpec.Builder
      */
     private fun addInitValue(name: String, element: VariableElement, fieldSpecBuilder: FieldSpec.Builder) {
-        var initialValue: String? = null
+        var initialValue: Any? = null
         val initializers = targetClass.initializers
         if (name in initializers) {
             initialValue = initializers[name]
         }
         if (initialValue == null) {
-            val annotation = element.getAnnotation(DerivationField::class.java) ?: return
-            initialValue = annotation.initialValue
+            val annotation = element.getAnnotation(DerivationField::class.java)
+            if (annotation != null) {
+                initialValue = annotation.initialValue
+            } else {
+                initialValue = element.constantValue
+            }
         }
-
-        if (element.asType().isSameTypeWith(String::class.java)) {
-            fieldSpecBuilder.initializer("\$S", initialValue)
-        } else {
-            fieldSpecBuilder.initializer("\$L", initialValue)
+        if (initialValue != null) {
+            if (element.asType().isSameTypeWith(String::class.java)) {
+                fieldSpecBuilder.initializer("\$S", initialValue)
+            } else {
+                fieldSpecBuilder.initializer("\$L", initialValue)
+            }
         }
     }
 
@@ -198,7 +209,7 @@ class DerivationLib(val targetClass: TargetClass) {
             if (spec.hasModifier(Modifier.PUBLIC) || spec.hasModifier(Modifier.PROTECTED)) {
                 return@forEach
             }
-            val getMethod = MethodSpec.methodBuilder(getGetterName(spec.type, name))
+            val getMethod = MethodSpec.methodBuilder(getGetterName(spec.type, name, false))
                 .addModifiers(Modifier.PUBLIC)
                 .returns(spec.type)
                 .addStatement("return \$L", name)
@@ -224,7 +235,8 @@ class DerivationLib(val targetClass: TargetClass) {
         if (ConstructorType.NO_ARGS in constructorTypes) {
             val emptyConstructorBuilder = MethodSpec.constructorBuilder().addModifiers(Modifier.PUBLIC)
             fieldList.forEach { name, field ->
-                if (!field.excludedInConstructor && field.isFinal && !field.hasConstantValue) {
+                // Logger.warn(name + ":" + field)
+                if (!field.excludedInConstructor && field.isFinal && (field.constantValue == null)) {
                     emptyConstructorBuilder.addStatement(
                         "this.\$L = \$L",
                         name,
@@ -246,7 +258,7 @@ class DerivationLib(val targetClass: TargetClass) {
                 if (spec.hasModifier(Modifier.STATIC)) {
                     return@forEach
                 }
-                if (field.isFinal && field.hasConstantValue) {
+                if (field.isFinal && field.constantValue != null) {
                     return@forEach
                 }
                 parameterSpecs.add(ParameterSpec.builder(spec.type, name).build())
@@ -285,15 +297,22 @@ class DerivationLib(val targetClass: TargetClass) {
                     if (spec.hasModifier(Modifier.STATIC)) {
                         continue
                     }
-                    if (field.isFinal && field.hasConstantValue) {
+                    if (field.isFinal && (field.constantValue != null)) {
                         continue
                     }
-                    val codeBock = if (spec.hasModifier(Modifier.PRIVATE)) {
+                    val codeBock = if (spec.hasModifier(Modifier.PRIVATE) && !spec.hasModifier(Modifier.FINAL)) {
                         CodeBlock.of(
                             "this.\$L(\$L.\$L())",
                             getSetterName(spec.type, field.name),
                             sourceTypeVar,
-                            getGetterName(spec.type, field.name)
+                            getGetterName(spec.type, field.name, field.isKotlinEnclosingType)
+                        )
+                    } else if (spec.hasModifier(Modifier.PRIVATE) && spec.hasModifier(Modifier.FINAL)) {
+                        CodeBlock.of(
+                            "this.\$L = \$L.\$L()",
+                            field.name,
+                            sourceTypeVar,
+                            getGetterName(spec.type, field.name, field.isKotlinEnclosingType)
                         )
                     } else {
                         CodeBlock.of("this.\$L = \$L.\$L", field.name, sourceTypeVar, field.name)
@@ -354,10 +373,11 @@ class DerivationLib(val targetClass: TargetClass) {
      *
      * @param typeName 类型名称
      * @param name 属性名
+     * @param isKotlinClass 是否是 Kotlin 类
      *
      * @return 该属性的 get 方法名
      */
-    private fun getGetterName(typeName: TypeName, name: String): String {
+    private fun getGetterName(typeName: TypeName, name: String, isKotlinClass: Boolean): String {
         return if (name.startsWith("is")) {
             when {
                 typeName == TypeName.BOOLEAN -> name
@@ -365,7 +385,11 @@ class DerivationLib(val targetClass: TargetClass) {
                 else -> "get${name.capitalize()}"
             }
         } else {
-            "get${name.capitalize()}"
+            when {
+                isKotlinClass -> "get${name.capitalize()}"
+                typeName == TypeName.BOOLEAN -> "is${name.capitalize()}"
+                else -> "get${name.capitalize()}"
+            }
         }
     }
 }

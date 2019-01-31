@@ -28,6 +28,8 @@ class KotlinTestA {
     @TestAnno2(name = "isMale", value = 26)
     var isMale: Boolean = true
 
+    var ba: Boolean = false
+
     @TestAnno1("TestA")
     @TestAnno2(name = "level", value = 27)
     var level: Int = 0

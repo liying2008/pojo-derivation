@@ -18,7 +18,7 @@ import java.io.Serializable;
  * =======================================================
  */
 @Derivation(
-        name = "AAndB",
+        name = "TestATestB",
         superClass = SuperClass1.class,
         superInterfaces = {Serializable.class, TestInterface.class},
         sourceTypes = {TestA.class, TestB.class, TestCs.class},

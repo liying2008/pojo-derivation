@@ -13,7 +13,7 @@ import cc.duduhuo.util.pojo.derivation.sample.anno.TestAnno1;
  * =======================================================
  */
 @Derivation(
-        name = "AAndKotlinB",
+        name = "TestAKotlinB",
         sourceTypes = {TestA.class, KotlinTestB.class},
         includeFields = {"number"},
         excludeFields = {"level", "level2", "level3"},

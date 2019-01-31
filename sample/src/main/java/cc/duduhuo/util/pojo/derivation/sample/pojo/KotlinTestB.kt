@@ -21,7 +21,8 @@ class KotlinTestB {
 
     var score: Double = 0.0
 
-    var isSuccess: Boolean = false
+    var setA: Boolean = false
+    var getB: Boolean = false
 
     var extra1: Extra1? = null
 }
