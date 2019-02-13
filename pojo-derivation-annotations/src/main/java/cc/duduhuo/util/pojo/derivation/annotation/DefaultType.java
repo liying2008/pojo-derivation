@@ -3,12 +3,10 @@ package cc.duduhuo.util.pojo.derivation.annotation;
 /**
  * =======================================================
  * Author: liying - liruoer2008@yeah.net
- * Datetime: 2019/1/25 19:52
- * Description: 生成的衍生类型的语言
+ * Datetime: 2019/2/2 21:15
+ * Description: 默认类型
  * Remarks:
  * =======================================================
  */
-public enum Language {
-    JAVA,
-    KOTLIN,
+public interface DefaultType {
 }

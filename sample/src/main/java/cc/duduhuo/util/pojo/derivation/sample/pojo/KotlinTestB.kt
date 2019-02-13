@@ -1,6 +1,5 @@
 package cc.duduhuo.util.pojo.derivation.sample.pojo
 
-import cc.duduhuo.util.pojo.derivation.annotation.DerivationField
 import cc.duduhuo.util.pojo.derivation.sample.ext.Extra1
 
 /**
@@ -16,7 +15,6 @@ class KotlinTestB {
 
     var number: Int = 0
 
-    @DerivationField(initialValue = "this is a description")
     var description: String = "this is a description"
 
     var score: Double = 0.0

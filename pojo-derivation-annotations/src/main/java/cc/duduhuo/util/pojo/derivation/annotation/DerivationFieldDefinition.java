@@ -2,27 +2,32 @@ package cc.duduhuo.util.pojo.derivation.annotation;
 
 import java.lang.annotation.Documented;
 import java.lang.annotation.Retention;
-import java.lang.annotation.Target;
 
-import static java.lang.annotation.ElementType.FIELD;
 import static java.lang.annotation.RetentionPolicy.SOURCE;
 
 /**
  * =======================================================
  * Author: liying - liruoer2008@yeah.net
- * Datetime: 2019/1/27 18:18
- * Description: 注解在 field 上，给 field 加上初始值
+ * Datetime: 2019/2/2 21:14
+ * Description: field 重新定义
  * Remarks:
  * =======================================================
  */
 @Retention(SOURCE)
-@Target({FIELD})
 @Documented
-public @interface DerivationField {
+public @interface DerivationFieldDefinition {
     /**
-     * 变量初始值
-     *
-     * @return
+     * 变量名称
      */
-    String initialValue();
+    String name();
+
+    /**
+     * 变量初始值（数组长度只能为0或1，空数组表示没有初始值）
+     */
+    String[] initialValue() default {};
+
+    /**
+     * 变量类型
+     */
+    Class<?> type() default DefaultType.class;
 }

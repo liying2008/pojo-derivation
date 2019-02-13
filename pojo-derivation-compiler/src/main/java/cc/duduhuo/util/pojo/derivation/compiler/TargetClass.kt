@@ -1,7 +1,7 @@
 package cc.duduhuo.util.pojo.derivation.compiler
 
 import cc.duduhuo.util.pojo.derivation.annotation.ConstructorType
-import cc.duduhuo.util.pojo.derivation.annotation.Language
+import cc.duduhuo.util.pojo.derivation.compiler.entity.FieldDefinition
 import com.bennyhuo.aptutils.types.asElement
 import javax.lang.model.element.TypeElement
 
@@ -33,23 +33,20 @@ class TargetClass {
     var sourceTypes = mutableListOf<TypeElement>()
 
     /** 需要包含的属性列表 */
-    var includeFields = listOf<String>()
+    var includeFields = arrayOf<String>()
 
     /** 需要排除的属性列表 */
-    var excludeFields = listOf<String>()
+    var excludeFields = arrayOf<String>()
 
     /** 需要排除的注解列表 */
     var excludeFieldAnnotations = mutableListOf<TypeElement>()
 
     /** 需要排除的构造方法中的参数 */
-    var excludeConstructorParams = listOf<String>()
+    var excludeConstructorParams = arrayOf<String>()
 
     /** 需要生成的构造方法种类 */
-    var constructorTypes = listOf(ConstructorType.NO_ARGS, ConstructorType.ALL_ARGS)
+    var constructorTypes = arrayOf(ConstructorType.NO_ARGS, ConstructorType.ALL_ARGS)
 
-    /** Field 初始化 */
-    var initializers = mutableMapOf<String, String>()
-
-    /** 生成类的语言（JAVA or KOTLIN） */
-    var languages = listOf(Language.JAVA)
+    /** Field 定义 */
+    var fieldDefinitions = mutableMapOf<String, FieldDefinition>()
 }

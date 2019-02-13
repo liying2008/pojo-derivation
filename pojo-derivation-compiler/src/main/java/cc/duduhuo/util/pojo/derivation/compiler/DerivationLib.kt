@@ -1,10 +1,11 @@
 package cc.duduhuo.util.pojo.derivation.compiler
 
 import cc.duduhuo.util.pojo.derivation.annotation.ConstructorType
+import cc.duduhuo.util.pojo.derivation.annotation.DefaultType
 import cc.duduhuo.util.pojo.derivation.annotation.Derivation
 import cc.duduhuo.util.pojo.derivation.annotation.DerivationConstructorExclude
-import cc.duduhuo.util.pojo.derivation.annotation.DerivationField
 import cc.duduhuo.util.pojo.derivation.compiler.entity.Field
+import cc.duduhuo.util.pojo.derivation.compiler.util.TypeUtils
 import com.bennyhuo.aptutils.AptContext
 import com.bennyhuo.aptutils.logger.Logger
 import com.bennyhuo.aptutils.types.asJavaTypeName
@@ -38,6 +39,7 @@ class DerivationLib(val targetClass: TargetClass) {
     fun parseFields() {
         val elementUtils = AptContext.elements
         val sourceTypes = targetClass.sourceTypes
+
         val excludeFieldAnnotations = targetClass.excludeFieldAnnotations.map {
             it.toString()
         }
@@ -71,7 +73,6 @@ class DerivationLib(val targetClass: TargetClass) {
                         return@forEach
                     }
                     element as VariableElement
-                    val typeName = element.asType().asJavaTypeName()
                     val modifiers = element.modifiers.toTypedArray()
                     // field 上的 注解
                     val annotationSpecs = mutableListOf<AnnotationSpec>()
@@ -103,6 +104,8 @@ class DerivationLib(val targetClass: TargetClass) {
                     field.combineType = combineType
                     field.enclosingType = sourceType
                     field.enclosingClassExcludedInConstructor = enclosingClassExcludedInConstructor
+                    // field type name
+                    val typeName = getFieldTypeName(element)
                     val fieldSpecBuilder = FieldSpec.builder(typeName, name, *modifiers)
                     fieldSpecBuilder.addAnnotations(annotationSpecs)
                     val javadoc = elementUtils.getDocComment(element)
@@ -122,6 +125,29 @@ class DerivationLib(val targetClass: TargetClass) {
     }
 
     /**
+     * 获取 field 的类型
+     *
+     * @param element Field element
+     *
+     * @return TypeName
+     */
+    private fun getFieldTypeName(element: VariableElement): TypeName {
+        val name = element.simpleName()
+        val fieldDefinitions = targetClass.fieldDefinitions
+        var typeName = element.asType().asJavaTypeName()
+        if (name in fieldDefinitions) {
+            val classname = fieldDefinitions[name]!!.classname
+            if (classname != DefaultType::class.java.canonicalName) {
+                val typeName1 = TypeUtils.getTypeNameFromClassname(classname)
+                if (typeName1 != null) {
+                    typeName = typeName1
+                }
+            }
+        }
+        return typeName
+    }
+
+    /**
      * 检查 Derivation 中填写的所有属性名称是否包含错误，如果有错误，则给出提示
      */
     private fun checkDerivation() {
@@ -138,10 +164,10 @@ class DerivationLib(val targetClass: TargetClass) {
                 Logger.warn(element, "excludeFields: $it is NOT in the field list!")
             }
         }
-        // 检查 initializers
-        targetClass.initializers.forEach { name, _ ->
+        // 检查 fieldDefinitions
+        targetClass.fieldDefinitions.forEach { name, _ ->
             if (name !in fieldList) {
-                Logger.warn(element, "initializers: $name is NOT in the field list!")
+                Logger.warn(element, "fieldDefinitions: $name is NOT in the field list!")
             }
         }
     }
@@ -154,25 +180,20 @@ class DerivationLib(val targetClass: TargetClass) {
      * @param fieldSpecBuilder FieldSpec.Builder
      */
     private fun addInitValue(name: String, element: VariableElement, fieldSpecBuilder: FieldSpec.Builder) {
-        var initialValue: Any? = null
-        val initializers = targetClass.initializers
-        if (name in initializers) {
-            initialValue = initializers[name]
+        val fieldDefinitions = targetClass.fieldDefinitions
+        val initialValue = if (name in fieldDefinitions) {
+            fieldDefinitions[name]!!.initialValue
+        } else {
+            element.constantValue
         }
+
         if (initialValue == null) {
-            val annotation = element.getAnnotation(DerivationField::class.java)
-            if (annotation != null) {
-                initialValue = annotation.initialValue
-            } else {
-                initialValue = element.constantValue
-            }
+            return
         }
-        if (initialValue != null) {
-            if (element.asType().isSameTypeWith(String::class.java)) {
-                fieldSpecBuilder.initializer("\$S", initialValue)
-            } else {
-                fieldSpecBuilder.initializer("\$L", initialValue)
-            }
+        if (element.asType().isSameTypeWith(String::class.java)) {
+            fieldSpecBuilder.initializer("\$S", initialValue)
+        } else {
+            fieldSpecBuilder.initializer("\$L", initialValue)
         }
     }
 

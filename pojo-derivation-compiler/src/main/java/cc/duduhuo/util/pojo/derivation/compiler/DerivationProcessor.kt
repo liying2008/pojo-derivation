@@ -1,13 +1,17 @@
 package cc.duduhuo.util.pojo.derivation.compiler
 
-import cc.duduhuo.util.pojo.derivation.annotation.*
+import cc.duduhuo.util.pojo.derivation.annotation.Derivation
+import cc.duduhuo.util.pojo.derivation.annotation.DerivationConstructorExclude
+import cc.duduhuo.util.pojo.derivation.annotation.DerivationFieldDefinition
 import cc.duduhuo.util.pojo.derivation.compiler.builder.TargetClassBuilder
+import cc.duduhuo.util.pojo.derivation.compiler.entity.FieldDefinition
 import com.bennyhuo.aptutils.AptContext
 import com.bennyhuo.aptutils.logger.Logger
 import com.bennyhuo.aptutils.types.packageName
 import com.bennyhuo.aptutils.types.simpleName
 import com.google.auto.common.MoreElements.getAnnotationMirror
 import com.google.auto.service.AutoService
+import java.util.*
 import javax.annotation.processing.AbstractProcessor
 import javax.annotation.processing.ProcessingEnvironment
 import javax.annotation.processing.Processor
@@ -59,14 +63,40 @@ class DerivationProcessor : AbstractProcessor() {
         targetClass.packageName = element.packageName()
         targetClass.sourceTypes.add(element)
         targetClass.excludeFieldAnnotations.add(elementUtils.getTypeElement(Derivation::class.java.canonicalName))
-        targetClass.excludeFieldAnnotations.add(elementUtils.getTypeElement(DerivationField::class.java.canonicalName))
+        targetClass.excludeFieldAnnotations.add(elementUtils.getTypeElement(DerivationFieldDefinition::class.java.canonicalName))
         targetClass.excludeFieldAnnotations.add(elementUtils.getTypeElement(DerivationConstructorExclude::class.java.canonicalName))
+
+        val derivation = element.getAnnotation(Derivation::class.java)
+        targetClass.simpleName = derivation.name
+        targetClass.includeFields = derivation.includeFields
+        targetClass.excludeFields = derivation.excludeFields
+        targetClass.excludeConstructorParams = derivation.excludeConstructorParams
+        targetClass.constructorTypes = derivation.constructorTypes
+
+        val typeSymbol = "(type="
+        derivation.fieldDefinitions.forEach {
+            val defStr = it.toString()
+            val name = it.name
+            val initialValue = it.initialValue
+            val typeStartIndex = defStr.indexOf(typeSymbol)
+            val typeEndIndex1 = defStr.indexOf(",", typeStartIndex)
+            val typeEndIndex2 = defStr.indexOf(")", typeStartIndex)
+            val typeEndIndex = if (typeEndIndex1 != -1) typeEndIndex1 else typeEndIndex2
+            val classname = defStr.substring(typeStartIndex + typeSymbol.length, typeEndIndex)
+//            Logger.warn("name=$name")
+//            Logger.warn("initialValue=${Arrays.toString(initialValue)}")
+//            Logger.warn("classname=$classname")
+            val fieldDefinition = FieldDefinition(name).apply {
+                this.initialValue = if (initialValue.isEmpty()) null else initialValue[0]
+                this.classname = classname
+            }
+            targetClass.fieldDefinitions[name] = fieldDefinition
+        }
 
         val annotationMirror = getAnnotationMirror(element, Derivation::class.java).get()
         annotationMirror.elementValues.forEach { executableElement, annotationValue ->
             Logger.note(executableElement, annotationValue.value.toString())
             when (executableElement.simpleName()) {
-                "name" -> targetClass.simpleName = annotationValue.value.toString()
                 "sourceTypes" -> targetClass.sourceTypes.addAll(getTypeElementListFromAnnotationValue(annotationValue))
                 "superClass" -> {
                     val superClass = getTypeElementFromAnnotationValue(annotationValue)
@@ -76,39 +106,8 @@ class DerivationProcessor : AbstractProcessor() {
                 }
                 "superInterfaces" -> targetClass.superInterfaces =
                     getTypeElementListFromAnnotationValue(annotationValue)
-                "includeFields" -> targetClass.includeFields = getStringListFromAnnotationValue(annotationValue)
-                "excludeFields" -> targetClass.excludeFields = getStringListFromAnnotationValue(annotationValue)
-                "excludeConstructorParams" -> targetClass.excludeConstructorParams =
-                    getStringListFromAnnotationValue(annotationValue)
                 "excludeFieldAnnotations" -> {
                     targetClass.excludeFieldAnnotations.addAll(getTypeElementListFromAnnotationValue(annotationValue))
-                }
-                "constructorTypes" -> {
-                    targetClass.constructorTypes =
-                        annotationValue.value.toString().split(",").filter { it.isNotEmpty() }.map {
-                            ConstructorType.valueOf(
-                                it.replaceFirst(
-                                    "cc.duduhuo.util.pojo.derivation.annotation.ConstructorType.",
-                                    ""
-                                )
-                            )
-                        }
-                }
-                "initializers" -> {
-                    val initializersStringList = getStringListFromAnnotationValue(annotationValue)
-                    initializersStringList.forEach {
-                        val index = it.indexOf(":")
-                        if (index > 0) {
-                            targetClass.initializers[it.substring(0, index)] = it.substring(index + 1)
-                        } else {
-                            Logger.warn(element, "$it: Invalid format!")
-                        }
-                    }
-                }
-                "languages" -> {
-                    targetClass.languages = annotationValue.value.toString().split(",").filter { it.isNotEmpty() }.map {
-                        Language.valueOf(it.replaceFirst("cc.duduhuo.util.pojo.derivation.annotation.Language.", ""))
-                    }
                 }
             }
         }
@@ -120,14 +119,6 @@ class DerivationProcessor : AbstractProcessor() {
             TargetClassBuilder(derivationLib).build()
         } catch (e: Exception) {
             Logger.logParsingError(element, Derivation::class.java, e)
-        }
-    }
-
-    private fun getStringListFromAnnotationValue(annotationValue: AnnotationValue): List<String> {
-        return annotationValue.value.toString().split(",").filter { it.isNotEmpty() }.map {
-            // 去掉字符串前后的 "
-            val str = it.substring(1).substring(0, it.length - 2)
-            str
         }
     }
 

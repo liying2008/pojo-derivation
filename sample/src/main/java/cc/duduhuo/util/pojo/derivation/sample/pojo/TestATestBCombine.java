@@ -2,7 +2,7 @@ package cc.duduhuo.util.pojo.derivation.sample.pojo;
 
 import cc.duduhuo.util.pojo.derivation.annotation.ConstructorType;
 import cc.duduhuo.util.pojo.derivation.annotation.Derivation;
-import cc.duduhuo.util.pojo.derivation.annotation.DerivationField;
+import cc.duduhuo.util.pojo.derivation.annotation.DerivationFieldDefinition;
 import cc.duduhuo.util.pojo.derivation.sample.anno.TestAnno1;
 import cc.duduhuo.util.pojo.derivation.sample.api.TestInterface;
 import cc.duduhuo.util.pojo.derivation.sample.ext.SuperClass1;
@@ -24,12 +24,13 @@ import java.io.Serializable;
         sourceTypes = {TestA.class, TestB.class, TestCs.class},
         excludeFields = {"level2", "level3"},
         excludeFieldAnnotations = {TestAnno1.class},
+        fieldDefinitions = {@DerivationFieldDefinition(name = "finalVar2", initialValue = "aa"),
+                @DerivationFieldDefinition(name = "score", initialValue = "0.98", type = double.class),
+                @DerivationFieldDefinition(name = "number", type = long[].class)},
         excludeConstructorParams = {"number"},
-        initializers = {"finalVar2:", "score:0.98", "a:b"},
         constructorTypes = {ConstructorType.NO_ARGS, ConstructorType.ALL_ARGS, ConstructorType.ALL_SOURCE_OBJS})
 public final class TestATestBCombine {
 
-    @DerivationField(initialValue = "0")
     private Integer other1 = 0;
     private String other2;
 }

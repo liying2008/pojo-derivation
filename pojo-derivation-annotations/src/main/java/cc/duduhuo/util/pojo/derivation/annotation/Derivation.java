@@ -11,7 +11,7 @@ import static java.lang.annotation.RetentionPolicy.SOURCE;
  * =======================================================
  * Author: liying - liruoer2008@yeah.net
  * Datetime: 2019/1/20 18:07
- * Description:
+ * Description: POJO Derivation 描述
  * Remarks:
  * =======================================================
  */
@@ -69,15 +69,7 @@ public @interface Derivation {
     ConstructorType[] constructorTypes() default {ConstructorType.NO_ARGS, ConstructorType.ALL_ARGS};
 
     /**
-     * Field 初始化。格式“fieldName:initValue”,如：{"age:18", "name:zhangsan"}
-     * 功能类似于：{@link DerivationField#initialValue()}
-     * 此选项优先级高于 {@link DerivationField#initialValue()}
+     * field 重新定义。
      */
-    String[] initializers() default {};
-
-    /**
-     * 生成的 POJO 类的语言
-     * 暂不支持
-     */
-    // Language[] languages() default {Language.JAVA};
+    DerivationFieldDefinition[] fieldDefinitions() default {};
 }

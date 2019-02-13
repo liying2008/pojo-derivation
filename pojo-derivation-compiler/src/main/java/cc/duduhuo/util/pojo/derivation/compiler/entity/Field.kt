@@ -11,7 +11,10 @@ import javax.lang.model.element.TypeElement
  * Remarks:
  * =======================================================
  */
-class Field(val name: String) {
+class Field(
+    /** field 名称 */
+    val name: String
+) {
     /** 是否是 Combine 类 */
     var combineType = false
 

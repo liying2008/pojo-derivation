@@ -1,6 +1,5 @@
 package cc.duduhuo.util.pojo.derivation.sample.pojo
 
-import cc.duduhuo.util.pojo.derivation.annotation.DerivationField
 import cc.duduhuo.util.pojo.derivation.sample.anno.TestAnno1
 import cc.duduhuo.util.pojo.derivation.sample.anno.TestAnno2
 
@@ -42,6 +41,5 @@ class KotlinTestA {
     @TestAnno2(name = "hobies", value = 29)
     var hobies: Array<String> = arrayOf()
 
-    @DerivationField(initialValue = "'a'")
     var aChar: Char = 'a'
 }
