@@ -4,6 +4,8 @@ import cc.duduhuo.util.pojo.derivation.annotation.DerivationConstructorExclude;
 import cc.duduhuo.util.pojo.derivation.sample.anno.TestAnno1;
 import cc.duduhuo.util.pojo.derivation.sample.anno.TestAnno2;
 
+import java.util.List;
+
 /**
  * =======================================================
  * Author: liying - liruoer2008@yeah.net
@@ -59,6 +61,9 @@ public final class TestA {
     @TestAnno2(name = "hobies", value = 29)
     private String[] hobies = new String[]{};
 
+    @TestAnno1("TestA")
+    private List<String> alist;
+
     // 以 is 开头，但不是 Boolean/boolean 类型
     @DerivationConstructorExclude(classnames = "AAndB")
     private Character isA;
@@ -67,13 +72,10 @@ public final class TestA {
     @DerivationConstructorExclude
     private char setB;
 
-    public TestA(char finalVar1, String name, int age, boolean isMale, int level, String[] hobies) {
-        this.finalVar1 = finalVar1;
-        this.name = name;
-        this.age = age;
-        this.isMale = isMale;
-        this.level = level;
-        this.hobies = hobies;
+    private String setC;
+
+    public TestA() {
+        finalVar1 = 0;
     }
 
     public String getName() {
@@ -116,6 +118,14 @@ public final class TestA {
         this.hobies = hobies;
     }
 
+    public List<String> getAlist() {
+        return alist;
+    }
+
+    public void setAlist(List<String> alist) {
+        this.alist = alist;
+    }
+
     public int getLevel2() {
         return level2;
     }
@@ -138,6 +148,14 @@ public final class TestA {
 
     public void setSetB(char setB) {
         this.setB = setB;
+    }
+
+    public String getSetC() {
+        return setC;
+    }
+
+    public void setSetC(String setC) {
+        this.setC = setC;
     }
 
     public boolean isAaa() {

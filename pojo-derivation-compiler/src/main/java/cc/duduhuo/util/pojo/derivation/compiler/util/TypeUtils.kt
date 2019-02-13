@@ -1,6 +1,8 @@
 package cc.duduhuo.util.pojo.derivation.compiler.util
 
 import com.bennyhuo.aptutils.AptContext
+import com.bennyhuo.aptutils.types.asJavaTypeName
+import com.squareup.javapoet.ArrayTypeName
 import com.squareup.javapoet.TypeName
 
 /**
@@ -33,9 +35,18 @@ object TypeUtils {
             "float[]" -> return TypeName.get(FloatArray::class.java)
             "double[]" -> return TypeName.get(DoubleArray::class.java)
             else -> {
-                val te = AptContext.elements.getTypeElement(name)
-                if (te != null) {
-                    return TypeName.get(te.asType())
+                if (name.endsWith("[]")) {
+                    // array
+                    val classname = name.substring(0, name.length - 2)
+                    val te = AptContext.elements.getTypeElement(classname)
+                    if (te != null) {
+                        return ArrayTypeName.of(te.asType().asJavaTypeName())
+                    }
+                } else {
+                    val te = AptContext.elements.getTypeElement(name)
+                    if (te != null) {
+                        return TypeName.get(te.asType())
+                    }
                 }
             }
         }

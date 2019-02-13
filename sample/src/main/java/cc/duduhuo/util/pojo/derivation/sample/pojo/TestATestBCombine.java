@@ -26,8 +26,9 @@ import java.io.Serializable;
         excludeFieldAnnotations = {TestAnno1.class},
         fieldDefinitions = {@DerivationFieldDefinition(name = "finalVar2", initialValue = "aa"),
                 @DerivationFieldDefinition(name = "score", initialValue = "0.98", type = double.class),
-                @DerivationFieldDefinition(name = "number", type = long[].class)},
-        excludeConstructorParams = {"number"},
+                @DerivationFieldDefinition(name = "number", type = long[].class),
+                @DerivationFieldDefinition(name = "setB", type = String[].class)},
+        excludeConstructorParams = {"number", "setB"},
         constructorTypes = {ConstructorType.NO_ARGS, ConstructorType.ALL_ARGS, ConstructorType.ALL_SOURCE_OBJS})
 public final class TestATestBCombine {
 
