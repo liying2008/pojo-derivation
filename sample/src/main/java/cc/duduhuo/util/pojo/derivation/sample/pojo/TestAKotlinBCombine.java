@@ -21,5 +21,5 @@ import cc.duduhuo.util.pojo.derivation.sample.anno.TestAnno1;
         excludeFieldAnnotations = {TestAnno1.class},
         fieldDefinitions = {@DerivationFieldDefinition(name = "number", type = float.class)},
         constructorTypes = {ConstructorType.NO_ARGS, ConstructorType.ALL_ARGS, ConstructorType.ALL_SOURCE_OBJS})
-public final class TestAKotlinBCombine {
+final class TestAKotlinBCombine {
 }

@@ -1,7 +1,6 @@
 package cc.duduhuo.util.pojo.derivation.compiler
 
 import cc.duduhuo.util.pojo.derivation.annotation.ConstructorType
-import cc.duduhuo.util.pojo.derivation.annotation.DefaultType
 import cc.duduhuo.util.pojo.derivation.annotation.Derivation
 import cc.duduhuo.util.pojo.derivation.annotation.DerivationConstructorExclude
 import cc.duduhuo.util.pojo.derivation.compiler.entity.Field
@@ -136,12 +135,10 @@ class DerivationLib(val targetClass: TargetClass) {
         val fieldDefinitions = targetClass.fieldDefinitions
         var typeName = element.asType().asJavaTypeName()
         if (name in fieldDefinitions) {
-            val classname = fieldDefinitions[name]!!.classname
-            if (classname != DefaultType::class.java.canonicalName) {
-                val typeName1 = TypeUtils.getTypeNameFromClassname(classname)
-                if (typeName1 != null) {
-                    typeName = typeName1
-                }
+            val classnames = fieldDefinitions[name]!!.classnames
+            val typeName1 = TypeUtils.getTypeNameFromClassnames(classnames)
+            if (typeName1 != null) {
+                typeName = typeName1
             }
         }
         return typeName

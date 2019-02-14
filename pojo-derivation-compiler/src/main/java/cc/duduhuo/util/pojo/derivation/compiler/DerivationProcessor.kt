@@ -76,19 +76,22 @@ class DerivationProcessor : AbstractProcessor() {
         val typeSymbol = "(type="
         derivation.fieldDefinitions.forEach {
             val defStr = it.toString()
+//            Logger.warn("defStr=$defStr")
             val name = it.name
             val initialValue = it.initialValue
             val typeStartIndex = defStr.indexOf(typeSymbol)
-            val typeEndIndex1 = defStr.indexOf(",", typeStartIndex)
+            val typeEndIndex1 = defStr.indexOf(", ", typeStartIndex)
             val typeEndIndex2 = defStr.indexOf(")", typeStartIndex)
             val typeEndIndex = if (typeEndIndex1 != -1) typeEndIndex1 else typeEndIndex2
-            val classname = defStr.substring(typeStartIndex + typeSymbol.length, typeEndIndex)
+            val classnames = defStr.substring(typeStartIndex + typeSymbol.length, typeEndIndex)
 //            Logger.warn("name=$name")
 //            Logger.warn("initialValue=${Arrays.toString(initialValue)}")
-//            Logger.warn("classname=$classname")
+//            Logger.warn("classnames=$classnames")
             val fieldDefinition = FieldDefinition(name).apply {
                 this.initialValue = if (initialValue.isEmpty()) null else initialValue[0]
-                this.classname = classname
+                if (classnames.isNotEmpty()) {
+                    this.classnames = classnames.split(",")
+                }
             }
             targetClass.fieldDefinitions[name] = fieldDefinition
         }

@@ -3,6 +3,8 @@ package cc.duduhuo.util.pojo.derivation.compiler.util
 import com.bennyhuo.aptutils.AptContext
 import com.bennyhuo.aptutils.types.asJavaTypeName
 import com.squareup.javapoet.ArrayTypeName
+import com.squareup.javapoet.ClassName
+import com.squareup.javapoet.ParameterizedTypeName
 import com.squareup.javapoet.TypeName
 
 /**
@@ -14,8 +16,29 @@ import com.squareup.javapoet.TypeName
  * =======================================================
  */
 object TypeUtils {
-    fun getTypeNameFromClassname(name: String): TypeName? {
-        when (name) {
+    fun getTypeNameFromClassnames(names: List<String>): TypeName? {
+        val size = names.size
+        when (size) {
+            0 -> return null
+            1 -> return getTypeName(names[0])
+            else -> {
+                // list or map or ...
+                val rawType = ClassName.get(Class.forName(names[0]))
+                val typeArgs = mutableListOf<TypeName>()
+                names.forEachIndexed { index, name ->
+                    if (index != 0) {
+                        getTypeName(name)?.let {
+                            typeArgs.add(it)
+                        }
+                    }
+                }
+                return ParameterizedTypeName.get(rawType, *typeArgs.toTypedArray())
+            }
+        }
+    }
+
+    private fun getTypeName(classname: String): TypeName? {
+        when (classname) {
             "void" -> return TypeName.VOID
             "boolean" -> return TypeName.BOOLEAN
             "byte" -> return TypeName.BYTE
@@ -35,15 +58,16 @@ object TypeUtils {
             "float[]" -> return TypeName.get(FloatArray::class.java)
             "double[]" -> return TypeName.get(DoubleArray::class.java)
             else -> {
-                if (name.endsWith("[]")) {
+                if (classname.endsWith("[]")) {
                     // array
-                    val classname = name.substring(0, name.length - 2)
-                    val te = AptContext.elements.getTypeElement(classname)
+                    // 去掉末尾的 []
+                    val oriName = classname.substring(0, classname.length - 2)
+                    val te = AptContext.elements.getTypeElement(oriName)
                     if (te != null) {
                         return ArrayTypeName.of(te.asType().asJavaTypeName())
                     }
                 } else {
-                    val te = AptContext.elements.getTypeElement(name)
+                    val te = AptContext.elements.getTypeElement(classname)
                     if (te != null) {
                         return TypeName.get(te.asType())
                     }

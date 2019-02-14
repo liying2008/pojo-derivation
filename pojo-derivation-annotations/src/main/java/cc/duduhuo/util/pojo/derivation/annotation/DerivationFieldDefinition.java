@@ -17,17 +17,17 @@ import static java.lang.annotation.RetentionPolicy.SOURCE;
 @Documented
 public @interface DerivationFieldDefinition {
     /**
-     * 变量名称
+     * field 名称
      */
     String name();
 
     /**
-     * 变量初始值（数组长度只能为0或1，空数组表示没有初始值）
+     * field 初始值（数组长度只能为0或1，空数组表示没有初始值）
      */
     String[] initialValue() default {};
 
     /**
-     * 变量类型
+     * field 类型，如 int.class 或 {List.class, String.class}
      */
-    Class<?> type() default DefaultType.class;
+    Class<?>[] type() default {};
 }

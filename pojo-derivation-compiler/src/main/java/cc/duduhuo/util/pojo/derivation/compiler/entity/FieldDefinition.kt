@@ -1,7 +1,5 @@
 package cc.duduhuo.util.pojo.derivation.compiler.entity
 
-import cc.duduhuo.util.pojo.derivation.annotation.DefaultType
-
 /**
  * =======================================================
  * Author: liying - liruoer2008@yeah.net
@@ -17,5 +15,5 @@ class FieldDefinition(
     /** field 初始值 */
     var initialValue: String? = null
     /** field 类型 */
-    var classname: String = DefaultType::class.java.canonicalName
+    var classnames: List<String> = listOf()
 }
