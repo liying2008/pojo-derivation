@@ -8,6 +8,6 @@ package cc.duduhuo.util.pojo.derivation.sample.ext;
  * Remarks:
  * =======================================================
  */
-public class Extra2 {
-    public int ex2;
+public class Extra2<E> {
+    public E ex2;
 }

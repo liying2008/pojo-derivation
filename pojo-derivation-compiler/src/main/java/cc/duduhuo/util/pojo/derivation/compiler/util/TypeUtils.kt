@@ -23,7 +23,7 @@ object TypeUtils {
             1 -> return getTypeName(names[0])
             else -> {
                 // list or map or ...
-                val rawType = ClassName.get(Class.forName(names[0]))
+                val rawType = ClassName.get(AptContext.elements.getTypeElement(names[0]))
                 val typeArgs = mutableListOf<TypeName>()
                 names.forEachIndexed { index, name ->
                     if (index != 0) {

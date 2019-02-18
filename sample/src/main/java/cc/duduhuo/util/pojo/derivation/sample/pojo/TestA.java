@@ -74,6 +74,8 @@ public final class TestA {
 
     private String setC;
 
+    private boolean setD;
+
     public TestA() {
         finalVar1 = 0;
     }
@@ -180,5 +182,13 @@ public final class TestA {
 
     public void setCcc(Boolean ccc) {
         isCcc = ccc;
+    }
+
+    public boolean isSetD() {
+        return setD;
+    }
+
+    public void setSetD(boolean setD) {
+        this.setD = setD;
     }
 }

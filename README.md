@@ -14,8 +14,8 @@ pojos are combined to derive other pojos.
 apply plugin: 'kotlin-kapt'
 
 dependencies {
-    compileOnly('cc.duduhuo.util:pojo-derivation-annotations:1.0.0.beta7')
-    kapt('cc.duduhuo.util:pojo-derivation-compiler:1.0.0.beta7')
+    compileOnly('cc.duduhuo.util:pojo-derivation-annotations:1.0.0')
+    kapt('cc.duduhuo.util:pojo-derivation-compiler:1.0.0')
 }
 ```
 
@@ -23,8 +23,8 @@ dependencies {
 
 ```gradle
 dependencies {
-    compileOnly('cc.duduhuo.util:pojo-derivation-annotations:1.0.0.beta7')
-    annotationProcessor('cc.duduhuo.util:pojo-derivation-compiler:1.0.0.beta7')
+    compileOnly('cc.duduhuo.util:pojo-derivation-annotations:1.0.0')
+    annotationProcessor('cc.duduhuo.util:pojo-derivation-compiler:1.0.0')
 }
 ```
 
