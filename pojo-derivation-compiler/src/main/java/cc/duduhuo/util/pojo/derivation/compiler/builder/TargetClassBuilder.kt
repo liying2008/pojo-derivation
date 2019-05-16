@@ -5,7 +5,9 @@ import com.bennyhuo.aptutils.AptContext
 import com.bennyhuo.aptutils.types.asJavaTypeName
 import com.bennyhuo.aptutils.types.canonicalName
 import com.bennyhuo.aptutils.utils.writeToFile
+import com.squareup.javapoet.FieldSpec
 import com.squareup.javapoet.JavaFile
+import com.squareup.javapoet.TypeName
 import com.squareup.javapoet.TypeSpec
 import java.util.*
 import javax.lang.model.element.Modifier
@@ -42,6 +44,14 @@ class TargetClassBuilder(private val derivationLib: DerivationLib) {
         }
         targetClass.superInterfaces.forEach {
             derivationClassBuild.addSuperinterface(it.asType().asJavaTypeName())
+        }
+        if (targetClass.serialVersionUID != 0L) {
+            // 添加 serialVersionUID
+            val serialVersionUIDField = FieldSpec.builder(
+                TypeName.LONG, "serialVersionUID", Modifier.PRIVATE,
+                Modifier.STATIC, Modifier.FINAL
+            ).initializer("\$LL", targetClass.serialVersionUID).build()
+            derivationClassBuild.addField(serialVersionUIDField)
         }
 
         val javaFile = JavaFile.builder(targetClass.packageName, derivationClassBuild.build())

@@ -69,6 +69,11 @@ public @interface Derivation {
     ConstructorType[] constructorTypes() default {ConstructorType.NO_ARGS, ConstructorType.ALL_ARGS};
 
     /**
+     * 自定义的 serialVersionUID
+     */
+    long serialVersionUID() default 0L;
+
+    /**
      * field 重新定义。
      */
     DerivationFieldDefinition[] fieldDefinitions() default {};

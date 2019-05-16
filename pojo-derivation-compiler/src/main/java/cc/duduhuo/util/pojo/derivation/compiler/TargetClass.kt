@@ -47,6 +47,9 @@ class TargetClass {
     /** 需要生成的构造方法种类 */
     var constructorTypes = arrayOf(ConstructorType.NO_ARGS, ConstructorType.ALL_ARGS)
 
+    /** 自定义的 serialVersionUID */
+    var serialVersionUID = 0L
+
     /** Field 定义 */
     var fieldDefinitions = mutableMapOf<String, FieldDefinition>()
 }

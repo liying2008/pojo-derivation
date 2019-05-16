@@ -72,6 +72,7 @@ class DerivationProcessor : AbstractProcessor() {
         targetClass.excludeFields = derivation.excludeFields
         targetClass.excludeConstructorParams = derivation.excludeConstructorParams
         targetClass.constructorTypes = derivation.constructorTypes
+        targetClass.serialVersionUID = derivation.serialVersionUID
 
         val typeSymbol = "(type="
         derivation.fieldDefinitions.forEach {
