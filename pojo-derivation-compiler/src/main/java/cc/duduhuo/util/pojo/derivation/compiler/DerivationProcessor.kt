@@ -7,6 +7,7 @@ import cc.duduhuo.util.pojo.derivation.compiler.builder.TargetClassBuilder
 import cc.duduhuo.util.pojo.derivation.compiler.entity.FieldDefinition
 import com.bennyhuo.aptutils.AptContext
 import com.bennyhuo.aptutils.logger.Logger
+import com.bennyhuo.aptutils.types.asTypeMirror
 import com.bennyhuo.aptutils.types.packageName
 import com.bennyhuo.aptutils.types.simpleName
 import com.google.auto.common.MoreElements.getAnnotationMirror
@@ -48,15 +49,38 @@ class DerivationProcessor : AbstractProcessor() {
     }
 
     override fun process(annotations: MutableSet<out TypeElement>, roundEnv: RoundEnvironment): Boolean {
-        roundEnv.getElementsAnnotatedWith(Derivation::class.java).filter { it.kind.isClass }
-            .forEach { element: Element ->
-                // Logger.warn(element, element.simpleName())
-                processElement(element as TypeElement)
-            }
+        val derivations = roundEnv.getElementsAnnotatedWith(Derivation::class.java).filter { it.kind.isClass }
+        processElement(derivations.toMutableList())
         return true
     }
 
-    private fun processElement(element: TypeElement) {
+    private fun processElement(derivations: MutableList<Element>) {
+        val targetClasses = derivations.map { element: Element ->
+            // Logger.warn(element, element.simpleName())
+            getTargetClass(element as TypeElement)
+        }
+        if (targetClasses.isNullOrEmpty()) {
+            return
+        }
+        val sortedClasses = targetClasses.sortedBy { it.order }
+        val it = sortedClasses[0]
+        Logger.warn("order=${it.order}")
+        val derivationLib = DerivationLib(it)
+        try {
+            derivationLib.parseFields()
+            derivationLib.genGetterAndSetter()
+            derivationLib.genConstructors()
+            TargetClassBuilder(derivationLib).build()
+        } catch (e: Exception) {
+            Logger.logParsingError(it.combineElement, Derivation::class.java, e)
+        }
+        derivations.remove(it.combineElement)
+        if (derivations.isNotEmpty()) {
+            processElement(derivations)
+        }
+    }
+
+    private fun getTargetClass(element: TypeElement): TargetClass {
         val elementUtils = AptContext.elements
         val targetClass = TargetClass()
         targetClass.combineElement = element
@@ -66,8 +90,15 @@ class DerivationProcessor : AbstractProcessor() {
         targetClass.excludeFieldAnnotations.add(elementUtils.getTypeElement(DerivationFieldDefinition::class.java.canonicalName))
         targetClass.excludeFieldAnnotations.add(elementUtils.getTypeElement(DerivationConstructorExclude::class.java.canonicalName))
 
+        element.annotationMirrors.forEach {
+            if (it.annotationType.simpleName() == Derivation::class.java.simpleName) {
+                Logger.warn("[][][]")
+                println(it.elementValues.toString())
+            }
+        }
         val derivation = element.getAnnotation(Derivation::class.java)
         targetClass.simpleName = derivation.name
+        targetClass.order = derivation.order
         targetClass.includeFields = derivation.includeFields
         targetClass.excludeFields = derivation.excludeFields
         targetClass.excludeConstructorParams = derivation.excludeConstructorParams
@@ -114,15 +145,7 @@ class DerivationProcessor : AbstractProcessor() {
                 }
             }
         }
-        val derivationLib = DerivationLib(targetClass)
-        try {
-            derivationLib.parseFields()
-            derivationLib.genGetterAndSetter()
-            derivationLib.genConstructors()
-            TargetClassBuilder(derivationLib).build()
-        } catch (e: Exception) {
-            Logger.logParsingError(element, Derivation::class.java, e)
-        }
+        return targetClass
     }
 
     private fun getTypeElementFromAnnotationValue(annotationValue: AnnotationValue): TypeElement? {
@@ -147,6 +170,7 @@ class DerivationProcessor : AbstractProcessor() {
             } else {
                 it
             }
+            Logger.warn("class=$classname")
             AptContext.elements.getTypeElement(classname)
         }
     }

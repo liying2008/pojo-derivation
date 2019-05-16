@@ -25,6 +25,11 @@ public @interface Derivation {
     String name();
 
     /**
+     * 解析顺序
+     */
+    int order() default 100;
+
+    /**
      * 需要继承的超类
      */
     Class<?> superClass() default Object.class;

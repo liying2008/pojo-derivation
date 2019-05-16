@@ -132,8 +132,8 @@ class DerivationLib(val targetClass: TargetClass) {
      */
     private fun getFieldTypeName(element: VariableElement): TypeName {
         val name = element.simpleName()
-        val fieldDefinitions = targetClass.fieldDefinitions
         var typeName = element.asType().asJavaTypeName()
+        val fieldDefinitions = targetClass.fieldDefinitions
         if (name in fieldDefinitions) {
             val classnames = fieldDefinitions[name]!!.classnames
             val typeName1 = TypeUtils.getTypeNameFromClassnames(classnames)

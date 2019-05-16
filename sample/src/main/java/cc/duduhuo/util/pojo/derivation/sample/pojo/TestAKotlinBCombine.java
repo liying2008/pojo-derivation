@@ -15,11 +15,14 @@ import cc.duduhuo.util.pojo.derivation.sample.anno.TestAnno1;
  */
 @Derivation(
         name = "TestAKotlinB",
-        sourceTypes = {TestA.class, KotlinTestB.class},
-        includeFields = {"number"},
+        order = 101,
+        sourceTypes = {TestA.class, KotlinTestB.class, cc.duduhuo.util.pojo.derivation.sample.readme.ABC.class},
+//        includeFields = {"number"},
         excludeFields = {"level", "level2", "level3"},
         excludeFieldAnnotations = {TestAnno1.class},
         fieldDefinitions = {@DerivationFieldDefinition(name = "number", type = float.class)},
-        constructorTypes = {ConstructorType.NO_ARGS, ConstructorType.ALL_ARGS, ConstructorType.ALL_SOURCE_OBJS})
+        constructorTypes = {ConstructorType.NO_ARGS, ConstructorType.ALL_ARGS, ConstructorType.ALL_SOURCE_OBJS}
+)
 final class TestAKotlinBCombine {
+    private List<cc.duduhuo.util.pojo.derivation.sample.readme.ABC> abcs;
 }

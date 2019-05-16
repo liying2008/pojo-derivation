@@ -23,6 +23,9 @@ class TargetClass {
     /** 生成类所在包 */
     var packageName = ""
 
+    /** 解析顺序 */
+    var order = 100
+
     /** 生成类需要继承的超类 */
     var superClass: TypeElement = Object::class.java.asElement() as TypeElement
 
