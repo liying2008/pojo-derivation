@@ -8,11 +8,11 @@ version LIB_VERSION
 dependencies {
     implementation project(':pojo-derivation-annotations')
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8"
-    implementation 'com.google.auto:auto-common:0.10'
-    compileOnly 'com.google.auto.service:auto-service:1.0-rc4'
-    annotationProcessor 'com.google.auto.service:auto-service:1.0-rc4'
-    implementation 'com.squareup:javapoet:1.11.1'
-    implementation 'com.bennyhuo.aptutils:aptutils:1.7'
+    implementation 'com.google.auto:auto-common:0.11'
+    compileOnly 'com.google.auto.service:auto-service:1.0-rc7'
+    annotationProcessor 'com.google.auto.service:auto-service:1.0-rc7'
+    implementation 'com.squareup:javapoet:1.13.0'
+    implementation 'com.bennyhuo.aptutils:aptutils:1.7.1'
 }
 
 compileKotlin {
@@ -26,11 +26,6 @@ task generateSourcesJar(type: Jar) {
     group = 'jar'
     getArchiveClassifier().set('sources')
     from sourceSets.main.java.srcDirs
-}
-
-task dokkaJavadoc(type: org.jetbrains.dokka.gradle.DokkaTask) {
-    outputFormat = "javadoc"
-    outputDirectory = javadoc.destinationDir
 }
 
 task generateJavadoc(type: Jar, dependsOn: dokkaJavadoc) {
