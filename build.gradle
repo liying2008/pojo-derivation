@@ -2,7 +2,7 @@ group LIB_GROUP
 version LIB_VERSION
 
 buildscript {
-    ext.kotlin_version = '1.4.10'
+    ext.kotlin_version = '1.4.30'
 
     repositories {
         maven { url 'https://maven.aliyun.com/repository/public' }
@@ -19,7 +19,7 @@ subprojects {
     project.buildDir = rootProject.buildDir.absolutePath + "/" + project.name
 }
 
-task clean(type: Delete) {
+task cleanAll(type: Delete) {
     delete rootProject.buildDir
     subprojects {
         delete "out"

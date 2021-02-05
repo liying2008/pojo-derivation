@@ -1,6 +1,5 @@
 rootProject.name = 'pojo-derivation'
 include 'pojo-derivation-annotations'
 include 'pojo-derivation-compiler'
-include 'pojo-derivation-runtime'
 include 'sample'
 
