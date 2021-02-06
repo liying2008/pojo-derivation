@@ -11,7 +11,7 @@ import java.lang.annotation.*;
  * =======================================================
  */
 @Documented
-@Retention(RetentionPolicy.SOURCE)
+@Retention(RetentionPolicy.CLASS)
 @Target({ElementType.FIELD})
 public @interface TestAnno2 {
     String name() default "";

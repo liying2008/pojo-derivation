@@ -27,7 +27,8 @@ public @interface DerivationFieldDefinition {
     String[] initialValue() default {};
 
     /**
-     * field 类型，如 int.class 或 {List.class, String.class}
+     * field 类型。
+     * 如 int 类型请指定为 int.class；List&lt;String&gt; 类型请指定为 {List.class, String.class}
      */
     Class<?>[] type() default {};
 }

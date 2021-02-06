@@ -27,7 +27,7 @@ class TargetClass {
     var superClass: TypeElement = Object::class.java.asElement() as TypeElement
 
     /** 生成类需要实现的接口 */
-    var superInterfaces = listOf<TypeElement>()
+    var superInterfaces = mutableListOf<TypeElement>()
 
     /** 源类型 */
     var sourceTypes = mutableListOf<TypeElement>()

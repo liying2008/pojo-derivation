@@ -193,14 +193,19 @@ class DerivationLib(val targetClass: TargetClass) {
         if (initialValue == null) {
             return
         }
-        if (element.asType().isSameTypeWith(String::class.java)) {
-            fieldSpecBuilder.initializer("\$S", initialValue)
-        } else if (element.asType().kind == TypeKind.LONG) {
-            fieldSpecBuilder.initializer("\$LL", initialValue)
-        } else if (element.asType().kind == TypeKind.FLOAT) {
-            fieldSpecBuilder.initializer("\$LF", initialValue)
-        } else {
-            fieldSpecBuilder.initializer("\$L", initialValue)
+        when {
+            element.asType().isSameTypeWith(String::class.java) -> {
+                fieldSpecBuilder.initializer("\$S", initialValue)
+            }
+            element.asType().kind == TypeKind.LONG -> {
+                fieldSpecBuilder.initializer("\$LL", initialValue)
+            }
+            element.asType().kind == TypeKind.FLOAT -> {
+                fieldSpecBuilder.initializer("\$LF", initialValue)
+            }
+            else -> {
+                fieldSpecBuilder.initializer("\$L", initialValue)
+            }
         }
     }
 
@@ -409,7 +414,8 @@ class DerivationLib(val targetClass: TargetClass) {
         return if (name.startsWith("is")) {
             when {
                 typeName == TypeName.BOOLEAN -> name
-                typeName.isBoxedPrimitive && typeName.unbox() == TypeName.BOOLEAN -> "get" + name.substring(2).capitalize()
+                typeName.isBoxedPrimitive && typeName.unbox() == TypeName.BOOLEAN -> "get" + name.substring(2)
+                    .capitalize()
                 else -> "get${name.capitalize()}"
             }
         } else {

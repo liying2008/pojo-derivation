@@ -7,6 +7,7 @@ import cc.duduhuo.util.pojo.derivation.compiler.builder.TargetClassBuilder
 import cc.duduhuo.util.pojo.derivation.compiler.entity.FieldDefinition
 import com.bennyhuo.aptutils.AptContext
 import com.bennyhuo.aptutils.logger.Logger
+import com.bennyhuo.aptutils.types.asElement
 import com.bennyhuo.aptutils.types.packageName
 import com.bennyhuo.aptutils.types.simpleName
 import com.google.auto.common.MoreElements.getAnnotationMirror
@@ -41,7 +42,7 @@ class DerivationProcessor : AbstractProcessor() {
     }
 
     override fun getSupportedAnnotationTypes() =
-        supportedAnnotations.mapTo(HashSet<String>(), Class<*>::getCanonicalName)
+        supportedAnnotations.mapTo(HashSet(), Class<*>::getCanonicalName)
 
     override fun getSupportedSourceVersion(): SourceVersion {
         return SourceVersion.latestSupported()
@@ -74,10 +75,22 @@ class DerivationProcessor : AbstractProcessor() {
         targetClass.constructorTypes = derivation.constructorTypes
         targetClass.serialVersionUID = derivation.serialVersionUID
 
+        // NOTE: 无法使用下面的方法获取 class object
+        // derivation.sourceTypes.forEach {
+        //     targetClass.sourceTypes.add(it.asElement() as TypeElement)
+        // }
+        // targetClass.superClass = derivation.superClass.asElement() as TypeElement
+        // derivation.superInterfaces.forEach {
+        //     targetClass.superInterfaces.add(it.asElement() as TypeElement)
+        // }
+        // derivation.excludeFieldAnnotations.forEach {
+        //     targetClass.excludeFieldAnnotations.add(it.asElement() as TypeElement)
+        // }
+
         val typeSymbol = "(type="
         derivation.fieldDefinitions.forEach {
             val defStr = it.toString()
-//            Logger.warn("defStr=$defStr")
+            // Logger.warn("\r\ndefStr=$defStr\r\n")
             val name = it.name
             val initialValue = it.initialValue
             val typeStartIndex = defStr.indexOf(typeSymbol)
@@ -85,9 +98,9 @@ class DerivationProcessor : AbstractProcessor() {
             val typeEndIndex2 = defStr.indexOf(")", typeStartIndex)
             val typeEndIndex = if (typeEndIndex1 != -1) typeEndIndex1 else typeEndIndex2
             val classnames = defStr.substring(typeStartIndex + typeSymbol.length, typeEndIndex)
-//            Logger.warn("name=$name")
-//            Logger.warn("initialValue=${Arrays.toString(initialValue)}")
-//            Logger.warn("classnames=$classnames")
+            // Logger.warn("name=$name\r\n")
+            // Logger.warn("initialValue=${initialValue.contentToString()}\r\n")
+            // Logger.warn("classnames=$classnames\r\n")
             val fieldDefinition = FieldDefinition(name).apply {
                 this.initialValue = if (initialValue.isEmpty()) null else initialValue[0]
                 if (classnames.isNotEmpty()) {
@@ -98,9 +111,10 @@ class DerivationProcessor : AbstractProcessor() {
         }
 
         val annotationMirror = getAnnotationMirror(element, Derivation::class.java).get()
-        annotationMirror.elementValues.forEach { executableElement, annotationValue ->
-            Logger.note(executableElement, annotationValue.value.toString())
-            when (executableElement.simpleName()) {
+        annotationMirror.elementValues.forEach { (executableElement, annotationValue) ->
+            val executableElementName = executableElement.simpleName()
+            Logger.note(executableElement, executableElementName + ": " + annotationValue.value.toString() + "\r\n")
+            when (executableElementName) {
                 "sourceTypes" -> targetClass.sourceTypes.addAll(getTypeElementListFromAnnotationValue(annotationValue))
                 "superClass" -> {
                     val superClass = getTypeElementFromAnnotationValue(annotationValue)
@@ -140,7 +154,7 @@ class DerivationProcessor : AbstractProcessor() {
         return AptContext.elements.getTypeElement(classname)
     }
 
-    private fun getTypeElementListFromAnnotationValue(annotationValue: AnnotationValue): List<TypeElement> {
+    private fun getTypeElementListFromAnnotationValue(annotationValue: AnnotationValue): MutableList<TypeElement> {
         return annotationValue.value.toString().split(",").filter { it.isNotEmpty() }.map {
             val classname = if (it.endsWith(".class")) {
                 // 去掉末尾的 .class
@@ -149,6 +163,6 @@ class DerivationProcessor : AbstractProcessor() {
                 it
             }
             AptContext.elements.getTypeElement(classname)
-        }
+        }.toMutableList()
     }
 }
