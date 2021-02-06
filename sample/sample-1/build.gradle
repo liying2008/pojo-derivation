@@ -1,0 +1,32 @@
+apply plugin: 'java'
+apply plugin: 'kotlin'
+apply plugin: 'kotlin-kapt'
+
+group LIB_GROUP
+version LIB_VERSION
+
+sourceCompatibility = JavaVersion.VERSION_1_8
+targetCompatibility = JavaVersion.VERSION_1_8
+
+dependencies {
+    compileOnly project(":pojo-derivation-annotations")
+    kapt project(":pojo-derivation-compiler")
+    implementation project(":sample:sample-base")
+    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8"
+    testImplementation group: 'junit', name: 'junit', version: '4.12'
+}
+
+compileKotlin {
+    kotlinOptions.jvmTarget = "1.8"
+}
+compileTestKotlin {
+    kotlinOptions.jvmTarget = "1.8"
+}
+
+tasks.withType(JavaCompile) {
+    options.encoding = "UTF-8"
+}
+
+tasks.withType(Javadoc) {
+    options.encoding = 'UTF-8'
+}

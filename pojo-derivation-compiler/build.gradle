@@ -5,6 +5,9 @@ apply plugin: 'org.jetbrains.dokka'
 group LIB_GROUP
 version LIB_VERSION
 
+sourceCompatibility = JavaVersion.VERSION_1_8
+targetCompatibility = JavaVersion.VERSION_1_8
+
 dependencies {
     implementation project(':pojo-derivation-annotations')
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8"
