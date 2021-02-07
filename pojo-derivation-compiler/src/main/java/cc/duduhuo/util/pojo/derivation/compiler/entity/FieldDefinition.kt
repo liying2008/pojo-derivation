@@ -14,6 +14,7 @@ class FieldDefinition(
 ) {
     /** field 初始值 */
     var initialValue: String? = null
+
     /** field 类型 */
     var classnames: List<String> = listOf()
 }

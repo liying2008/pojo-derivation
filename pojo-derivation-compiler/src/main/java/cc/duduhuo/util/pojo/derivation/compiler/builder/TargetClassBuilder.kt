@@ -30,7 +30,7 @@ class TargetClassBuilder(private val derivationLib: DerivationLib) {
         val targetClass = derivationLib.targetClass
         val derivationClassBuild = TypeSpec.classBuilder(targetClass.simpleName).addModifiers(Modifier.PUBLIC)
 
-        val fieldSpecs = derivationLib.fieldList.values.map {
+        val fieldSpecs = derivationLib.fieldMap.values.map {
             it.spec
         }
         derivationClassBuild.addFields(fieldSpecs)

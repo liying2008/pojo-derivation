@@ -16,6 +16,7 @@ import javax.lang.model.element.ElementKind
 import javax.lang.model.element.Modifier
 import javax.lang.model.element.VariableElement
 import javax.lang.model.type.TypeKind
+import javax.lang.model.type.TypeMirror
 
 /**
  * =======================================================
@@ -26,7 +27,7 @@ import javax.lang.model.type.TypeKind
  * =======================================================
  */
 class DerivationLib(val targetClass: TargetClass) {
-    val fieldList = mutableMapOf<String, Field>()
+    val fieldMap = mutableMapOf<String, Field>()
     val methodList = mutableListOf<MethodSpec>()
 
     companion object {
@@ -67,13 +68,13 @@ class DerivationLib(val targetClass: TargetClass) {
             // 获取类中所有的元素
             val enclosedElements = sourceType.enclosedElements
             enclosedElements.forEach { element ->
-                // Logger.warn(element.simpleName.toString())
+                val name = element.simpleName()
+                // Logger.warn("current element: ${name}\r\n")
                 if (element.kind == ElementKind.FIELD) {
-                    val name = element.simpleName()
                     if (name in commonIgnoreFields) {
                         return@forEach
                     }
-                    if (name in fieldList) {
+                    if (name in fieldMap) {
                         return@forEach
                     }
                     element as VariableElement
@@ -103,7 +104,7 @@ class DerivationLib(val targetClass: TargetClass) {
                         }
                     }
                     field.isKotlinEnclosingType = isKotlin
-                    field.constantValue = element.constantValue
+                    field.constantValue = getFieldConstantValue(element)
                     field.isFinal = Modifier.FINAL in modifiers
                     field.combineType = combineType
                     field.enclosingType = sourceType
@@ -118,7 +119,7 @@ class DerivationLib(val targetClass: TargetClass) {
                     }
                     addInitValue(name, element, fieldSpecBuilder)
                     field.spec = fieldSpecBuilder.build()
-                    fieldList[name] = field
+                    fieldMap[name] = field
                 }
             }
         }
@@ -126,6 +127,23 @@ class DerivationLib(val targetClass: TargetClass) {
         checkDerivation()
         // 过滤 Fields
         filterFields()
+        // Logger.warn("\r\nfiltered fields map: ${fieldMap.map { it.key }}\r\n")
+    }
+
+    /**
+     * 获取属性的常量值。
+     * 如果常量值为类型的默认值，则不设置（返回 null，可以在构造方法中设置）。
+     */
+    private fun getFieldConstantValue(element: VariableElement): Any? {
+        val constantValue: Any = element.constantValue ?: return null
+        when (element.asType().kind) {
+            TypeKind.BOOLEAN -> if (constantValue == false) return null
+            TypeKind.BYTE, TypeKind.SHORT, TypeKind.INT, TypeKind.LONG, TypeKind.CHAR -> if (constantValue == 0) return null
+            TypeKind.FLOAT -> if (constantValue == 0.0F) return null
+            TypeKind.DOUBLE -> if (constantValue == 0.0) return null
+            else -> return constantValue
+        }
+        return constantValue
     }
 
     /**
@@ -141,9 +159,9 @@ class DerivationLib(val targetClass: TargetClass) {
         var typeName = element.asType().asJavaTypeName()
         if (name in fieldDefinitions) {
             val classnames = fieldDefinitions[name]!!.classnames
-            val typeName1 = TypeUtils.getTypeNameFromClassnames(classnames)
-            if (typeName1 != null) {
-                typeName = typeName1
+            val redefinedTypeName = TypeUtils.getTypeNameFromClassnames(classnames)
+            if (redefinedTypeName != null) {
+                typeName = redefinedTypeName
             }
         }
         return typeName
@@ -156,20 +174,20 @@ class DerivationLib(val targetClass: TargetClass) {
         val element = targetClass.combineElement
         // 检查 includeFields
         targetClass.includeFields.forEach {
-            if (it !in fieldList) {
-                Logger.warn(element, "includeFields: $it is NOT in the field list!")
+            if (it !in fieldMap) {
+                Logger.warn(element, "includeFields: $it is NOT in the field list!\r\n")
             }
         }
         // 检查 excludeFields
         targetClass.excludeFields.forEach {
-            if (it !in fieldList) {
-                Logger.warn(element, "excludeFields: $it is NOT in the field list!")
+            if (it !in fieldMap) {
+                Logger.warn(element, "excludeFields: $it is NOT in the field list!\r\n")
             }
         }
         // 检查 fieldDefinitions
         targetClass.fieldDefinitions.forEach { (name, _) ->
-            if (name !in fieldList) {
-                Logger.warn(element, "fieldDefinitions: $name is NOT in the field list!")
+            if (name !in fieldMap) {
+                Logger.warn(element, "fieldDefinitions: $name is NOT in the field list!\r\n")
             }
         }
     }
@@ -186,8 +204,8 @@ class DerivationLib(val targetClass: TargetClass) {
         val initialValue = if (name in fieldDefinitions) {
             fieldDefinitions[name]!!.initialValue
         } else {
-            // Logger.warn("name=$name, constantValue=${element.constantValue}")
-            element.constantValue
+            // Logger.warn("name=$name, constantValue=${getFieldConstantValue(element)}")
+            getFieldConstantValue(element)
         }
 
         if (initialValue == null) {
@@ -218,18 +236,18 @@ class DerivationLib(val targetClass: TargetClass) {
         val filteredMap = mutableMapOf<String, Field>()
         if (includeFields.isNotEmpty()) {
             includeFields.forEach {
-                filteredMap[it] = fieldList.getValue(it)
+                filteredMap[it] = fieldMap.getValue(it)
             }
-            fieldList.clear()
-            fieldList.putAll(filteredMap)
+            fieldMap.clear()
+            fieldMap.putAll(filteredMap)
         } else if (excludeFields.isNotEmpty()) {
-            fieldList.forEach { (name, _) ->
+            fieldMap.forEach { (name, _) ->
                 if (name !in excludeFields) {
-                    filteredMap[name] = fieldList.getValue(name)
+                    filteredMap[name] = fieldMap.getValue(name)
                 }
             }
-            fieldList.clear()
-            fieldList.putAll(filteredMap)
+            fieldMap.clear()
+            fieldMap.putAll(filteredMap)
         }
     }
 
@@ -237,7 +255,7 @@ class DerivationLib(val targetClass: TargetClass) {
      * 生成 Getter 和 Setter 方法
      */
     fun genGetterAndSetter() {
-        fieldList.forEach { (name, field) ->
+        fieldMap.forEach { (name, field) ->
             val spec = field.spec
             if (spec.hasModifier(Modifier.PUBLIC) || spec.hasModifier(Modifier.PROTECTED)) {
                 return@forEach
@@ -267,8 +285,8 @@ class DerivationLib(val targetClass: TargetClass) {
         // 无参构造方法
         if (ConstructorType.NO_ARGS in constructorTypes) {
             val emptyConstructorBuilder = MethodSpec.constructorBuilder().addModifiers(Modifier.PUBLIC)
-            fieldList.forEach { (name, field) ->
-                // Logger.warn(name + ":" + field)
+            fieldMap.forEach { (name, field) ->
+                // Logger.warn("NO_ARGS: $name:$field\r\n")
                 if (!field.excludedInConstructor && field.isFinal && (field.constantValue == null)) {
                     emptyConstructorBuilder.addStatement(
                         "this.\$L = \$L",
@@ -283,7 +301,8 @@ class DerivationLib(val targetClass: TargetClass) {
         if (ConstructorType.ALL_ARGS in constructorTypes) {
             val parameterSpecs = mutableListOf<ParameterSpec>()
             val codeBlocks = mutableListOf<CodeBlock>()
-            fieldList.forEach { (name, field) ->
+            fieldMap.forEach { (name, field) ->
+                // Logger.warn("ALL_ARGS: $name:$field\r\n")
                 val spec = field.spec
                 if (field.excludedInConstructor) {
                     return@forEach
@@ -312,7 +331,7 @@ class DerivationLib(val targetClass: TargetClass) {
         if (ConstructorType.ALL_SOURCE_OBJS in constructorTypes) {
             val parameterSpecs = mutableListOf<ParameterSpec>()
             val codeBlocks = mutableListOf<CodeBlock>()
-            val groupedField = fieldList.values.filterNot { it.combineType || it.enclosingClassExcludedInConstructor }
+            val groupedField = fieldMap.values.filterNot { it.combineType || it.enclosingClassExcludedInConstructor }
                 .groupBy { it.enclosingType }
             groupedField.forEach { (enclosingType, fields) ->
                 val sourceTypeVar = enclosingType.simpleName().decapitalize()

@@ -45,7 +45,7 @@ class DerivationProcessor : AbstractProcessor() {
         supportedAnnotations.mapTo(HashSet(), Class<*>::getCanonicalName)
 
     override fun getSupportedSourceVersion(): SourceVersion {
-        return SourceVersion.latestSupported()
+        return SourceVersion.RELEASE_8
     }
 
     override fun process(annotations: MutableSet<out TypeElement>, roundEnv: RoundEnvironment): Boolean {
