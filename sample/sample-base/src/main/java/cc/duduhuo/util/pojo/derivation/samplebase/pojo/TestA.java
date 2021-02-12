@@ -3,6 +3,7 @@ package cc.duduhuo.util.pojo.derivation.samplebase.pojo;
 import cc.duduhuo.util.pojo.derivation.annotation.DerivationConstructorExclude;
 import cc.duduhuo.util.pojo.derivation.samplebase.anno.TestAnno1;
 import cc.duduhuo.util.pojo.derivation.samplebase.anno.TestAnno2;
+import cc.duduhuo.util.pojo.derivation.samplebase.ext.Extra2;
 
 import java.util.List;
 
@@ -74,7 +75,7 @@ public final class TestA {
 
     private String setC;
 
-    private boolean setD;
+    private Extra2<Integer> setD;
 
     public TestA() {
         finalVar1 = 0;
@@ -184,11 +185,11 @@ public final class TestA {
         isCcc = ccc;
     }
 
-    public boolean isSetD() {
+    public Extra2<Integer> getSetD() {
         return setD;
     }
 
-    public void setSetD(boolean setD) {
+    public void setSetD(Extra2<Integer> setD) {
         this.setD = setD;
     }
 }

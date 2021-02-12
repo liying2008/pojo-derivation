@@ -45,4 +45,20 @@ final class TestATestBCombine {
 
     private Integer other1 = 0;
     private String other2;
+
+    public Integer getOther1() {
+        return other1;
+    }
+
+    public void setOther1(Integer other1) {
+        this.other1 = other1;
+    }
+
+    public String getOther2() {
+        return other2;
+    }
+
+    public void setOther2(String other2) {
+        this.other2 = other2;
+    }
 }

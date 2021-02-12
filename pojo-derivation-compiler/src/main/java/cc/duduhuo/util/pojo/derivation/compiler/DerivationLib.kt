@@ -10,11 +10,11 @@ import com.bennyhuo.aptutils.AptContext
 import com.bennyhuo.aptutils.logger.Logger
 import com.bennyhuo.aptutils.types.asJavaTypeName
 import com.bennyhuo.aptutils.types.isSameTypeWith
+import com.bennyhuo.aptutils.types.isSubTypeOf
 import com.bennyhuo.aptutils.types.simpleName
 import com.squareup.javapoet.*
-import javax.lang.model.element.ElementKind
-import javax.lang.model.element.Modifier
-import javax.lang.model.element.VariableElement
+import javax.lang.model.element.*
+import javax.lang.model.type.NoType
 import javax.lang.model.type.TypeKind
 import javax.lang.model.type.TypeMirror
 
@@ -28,6 +28,7 @@ import javax.lang.model.type.TypeMirror
  */
 class DerivationLib(val targetClass: TargetClass) {
     val fieldMap = mutableMapOf<String, Field>()
+    private val getterMap = mutableMapOf<TypeElement, MutableList<String>>()
     val methodList = mutableListOf<MethodSpec>()
 
     companion object {
@@ -65,6 +66,8 @@ class DerivationLib(val targetClass: TargetClass) {
                     }
                 }
             }
+
+            getterMap[sourceType] = mutableListOf()
             // 获取类中所有的元素
             val enclosedElements = sourceType.enclosedElements
             enclosedElements.forEach { element ->
@@ -120,9 +123,31 @@ class DerivationLib(val targetClass: TargetClass) {
                     addInitValue(name, element, fieldSpecBuilder)
                     field.spec = fieldSpecBuilder.build()
                     fieldMap[name] = field
+                } else if (element.kind == ElementKind.METHOD) {
+                    element as ExecutableElement
+                    if (element.modifiers.contains(Modifier.PRIVATE)) {
+                        // getter 方法不能是 private 的
+                        return@forEach
+                    }
+                    if (!name.startsWith("get") && !name.startsWith("is")) {
+                        // getter 方法名需要以 get 或 is 开头
+                        return@forEach
+                    }
+                    if (element.returnType.kind == TypeKind.VOID || element.returnType.kind == TypeKind.NONE) {
+                        // getter 方法需要有返回值
+                        return@forEach
+                    }
+                    if (element.parameters.size > 0) {
+                        // getter 方法不能有参数
+                        return@forEach
+                    }
+                    getterMap[sourceType]!!.add(name)
                 }
             }
         }
+        // Logger.warn("getters: ${getterMap}\r\n")
+        // 根据 getters 方法过滤一些没有 getter 方法的 fields
+        filterFieldsAccordingToGetters()
         // 检查 Derivation 中的属性名称
         checkDerivation()
         // 过滤 Fields
@@ -168,26 +193,54 @@ class DerivationLib(val targetClass: TargetClass) {
     }
 
     /**
+     * 根据 getters 方法过滤一些没有 getter 方法的 fields
+     */
+    private fun filterFieldsAccordingToGetters() {
+        val filteredMap = mutableMapOf<String, Field>()
+        fieldMap.forEach { (name, field) ->
+            val spec = field.spec
+            if (!spec.hasModifier(Modifier.PRIVATE)) {
+                filteredMap[name] = field
+                return@forEach
+            }
+            if (spec.hasModifier(Modifier.STATIC)) {
+                filteredMap[name] = field
+                return@forEach
+            }
+            val getterName = getGetterName(spec.type, name, field.isKotlinEnclosingType)
+            if (getterName in getterMap[field.enclosingType]!!) {
+                filteredMap[name] = field
+                return@forEach
+            } else {
+                Logger.warn("Field \"${name}\" has no getter method named \"${getterName}\" !\r\n")
+            }
+        }
+        fieldMap.clear()
+        fieldMap.putAll(filteredMap)
+    }
+
+    /**
      * 检查 Derivation 中填写的所有属性名称是否包含错误，如果有错误，则给出提示
      */
     private fun checkDerivation() {
         val element = targetClass.combineElement
+        // Logger.warn("Checking [${element}]\r\n")
         // 检查 includeFields
         targetClass.includeFields.forEach {
             if (it !in fieldMap) {
-                Logger.warn(element, "includeFields: $it is NOT in the field list!\r\n")
+                Logger.warn("includeFields @${element}: \"$it\" is NOT in the field list!\r\n")
             }
         }
         // 检查 excludeFields
         targetClass.excludeFields.forEach {
             if (it !in fieldMap) {
-                Logger.warn(element, "excludeFields: $it is NOT in the field list!\r\n")
+                Logger.warn("excludeFields @${element}: \"$it\" is NOT in the field list!\r\n")
             }
         }
         // 检查 fieldDefinitions
         targetClass.fieldDefinitions.forEach { (name, _) ->
             if (name !in fieldMap) {
-                Logger.warn(element, "fieldDefinitions: $name is NOT in the field list!\r\n")
+                Logger.warn("fieldDefinitions @${element}: \"$name\" is NOT in the field list!\r\n")
             }
         }
     }
@@ -241,9 +294,9 @@ class DerivationLib(val targetClass: TargetClass) {
             fieldMap.clear()
             fieldMap.putAll(filteredMap)
         } else if (excludeFields.isNotEmpty()) {
-            fieldMap.forEach { (name, _) ->
+            fieldMap.forEach { (name, field) ->
                 if (name !in excludeFields) {
-                    filteredMap[name] = fieldMap.getValue(name)
+                    filteredMap[name] = field
                 }
             }
             fieldMap.clear()
@@ -288,6 +341,7 @@ class DerivationLib(val targetClass: TargetClass) {
             fieldMap.forEach { (name, field) ->
                 // Logger.warn("NO_ARGS: $name:$field\r\n")
                 if (!field.excludedInConstructor && field.isFinal && (field.constantValue == null)) {
+                    // Logger.warn("NO_ARGS: typeName:initValue = ${field.spec.type}:${getInitValueByTypeName(field.spec.type)}\r\n")
                     emptyConstructorBuilder.addStatement(
                         "this.\$L = \$L",
                         name,
