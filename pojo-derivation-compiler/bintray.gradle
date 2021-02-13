@@ -28,7 +28,7 @@ bintray {
         issueTrackerUrl = LIB_ISSUE_TRACKER_URL
         vcsUrl = gitUrl
         licenses = [LIB_LICENSE]
-        labels = [LIB_PACKAGING, LIB_LABEL]
+        labels = LIB_LABEL.split(",")
         publicDownloadNumbers = true
 
         githubRepo = LIB_GITHUB_REPO //Optional Github repository
