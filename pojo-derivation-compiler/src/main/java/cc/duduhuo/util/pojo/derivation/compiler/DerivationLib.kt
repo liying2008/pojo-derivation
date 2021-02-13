@@ -444,13 +444,13 @@ class DerivationLib(val targetClass: TargetClass) {
      *
      * @return 初始值
      */
-    private fun getInitValueByTypeName(typeName: TypeName): Any? {
+    private fun getInitValueByTypeName(typeName: TypeName): String {
         return when (typeName) {
-            TypeName.BOOLEAN -> false
-            TypeName.BYTE, TypeName.CHAR, TypeName.INT, TypeName.SHORT, TypeName.LONG -> 0
-            TypeName.FLOAT -> 0.0F
-            TypeName.DOUBLE -> 0.0
-            else -> null
+            TypeName.BOOLEAN -> "false"
+            TypeName.BYTE, TypeName.CHAR, TypeName.INT, TypeName.SHORT, TypeName.LONG -> "0"
+            TypeName.FLOAT -> "0.0F"
+            TypeName.DOUBLE -> "0.0"
+            else -> "null"
         }
     }
 

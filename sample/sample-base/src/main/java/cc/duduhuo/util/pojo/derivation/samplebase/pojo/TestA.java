@@ -23,6 +23,11 @@ public final class TestA {
     @TestAnno2(name = "finalVar2", value = 22)
     public final String finalVar2 = "finalVar2";
 
+    public final float finalVar3;
+    public final double finalVar4;
+    public final boolean finalVar5;
+    public final String finalVar6;
+
     @TestAnno2(name = "STATIC_VAR", value = 23)
     public static final String STATIC_VAR = "SV";
 
@@ -79,6 +84,10 @@ public final class TestA {
 
     public TestA() {
         finalVar1 = 0;
+        finalVar3 = 0.0F;
+        finalVar4 = 0.0;
+        finalVar5 = false;
+        finalVar6 = null;
     }
 
     public String getName() {
