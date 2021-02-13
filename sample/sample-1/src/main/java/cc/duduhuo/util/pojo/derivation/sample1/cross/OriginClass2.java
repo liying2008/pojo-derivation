@@ -1,10 +1,10 @@
 package cc.duduhuo.util.pojo.derivation.sample1.cross;
 
-import cc.duduhuo.util.pojo.derivation.samplebase.enums.TestEnum1;
+import cc.duduhuo.util.pojo.derivation.samplebase.enums.ServerLocation;
 
 public class OriginClass2 {
     private float wsrtF;
-    private TestEnum1 testEnum1;
+    private ServerLocation serverLocation;
 
     public float getWsrtF() {
         return wsrtF;
@@ -14,11 +14,11 @@ public class OriginClass2 {
         this.wsrtF = wsrtF;
     }
 
-    public TestEnum1 getTestEnum1() {
-        return testEnum1;
+    public ServerLocation getServerLocation() {
+        return serverLocation;
     }
 
-    public void setTestEnum1(TestEnum1 testEnum1) {
-        this.testEnum1 = testEnum1;
+    public void setServerLocation(ServerLocation serverLocation) {
+        this.serverLocation = serverLocation;
     }
 }
