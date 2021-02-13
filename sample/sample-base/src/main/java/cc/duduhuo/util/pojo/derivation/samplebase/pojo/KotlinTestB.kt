@@ -1,5 +1,6 @@
 package cc.duduhuo.util.pojo.derivation.samplebase.pojo
 
+import cc.duduhuo.util.pojo.derivation.samplebase.enums.TestEnum1
 import cc.duduhuo.util.pojo.derivation.samplebase.ext.Extra1
 
 /**
@@ -23,4 +24,6 @@ class KotlinTestB {
     var getB: Boolean = false
 
     var extra1: Extra1? = null
+
+    var testEnum1: TestEnum1 = TestEnum1.TYPE_A
 }

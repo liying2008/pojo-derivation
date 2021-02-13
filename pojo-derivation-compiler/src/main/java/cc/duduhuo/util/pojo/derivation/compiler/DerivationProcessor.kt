@@ -113,7 +113,7 @@ class DerivationProcessor : AbstractProcessor() {
         val annotationMirror = getAnnotationMirror(element, Derivation::class.java).get()
         annotationMirror.elementValues.forEach { (executableElement, annotationValue) ->
             val executableElementName = executableElement.simpleName()
-            Logger.note(executableElement, executableElementName + ": " + annotationValue.value.toString() + "\r\n")
+            // Logger.note(executableElement, executableElementName + ": " + annotationValue.value.toString() + "\r\n")
             when (executableElementName) {
                 "sourceTypes" -> targetClass.sourceTypes.addAll(getTypeElementListFromAnnotationValue(annotationValue))
                 "superClass" -> {
