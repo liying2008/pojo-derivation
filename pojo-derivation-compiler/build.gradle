@@ -1,6 +1,8 @@
-apply plugin: 'kotlin'
-apply plugin: 'maven'
-apply plugin: 'org.jetbrains.dokka'
+plugins {
+    id "org.jetbrains.kotlin.jvm"
+    id "org.jetbrains.dokka"
+    id "com.vanniktech.maven.publish"
+}
 
 group LIB_GROUP
 version LIB_VERSION
@@ -41,5 +43,3 @@ artifacts {
     archives generateJavadoc
     archives generateSourcesJar
 }
-
-apply from: './bintray.gradle'

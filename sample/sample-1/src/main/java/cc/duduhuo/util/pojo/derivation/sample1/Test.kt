@@ -20,5 +20,5 @@ fun main() {
     println(b.number)
 
     val c = TestATestB()
-    println(c.float1)
+    println(c.floatValue1)
 }

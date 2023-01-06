@@ -1,5 +1,7 @@
-apply plugin: 'java'
-apply plugin: 'maven'
+plugins {
+    id 'java'
+    id "com.vanniktech.maven.publish"
+}
 
 group LIB_GROUP
 version LIB_VERSION
@@ -32,5 +34,3 @@ artifacts {
     archives javadocJar
     archives sourcesJar
 }
-
-apply from: './bintray.gradle'
