@@ -9,7 +9,7 @@ import com.squareup.javapoet.FieldSpec
 import com.squareup.javapoet.JavaFile
 import com.squareup.javapoet.TypeName
 import com.squareup.javapoet.TypeSpec
-import java.util.*
+import java.util.Date
 import javax.lang.model.element.Modifier
 
 

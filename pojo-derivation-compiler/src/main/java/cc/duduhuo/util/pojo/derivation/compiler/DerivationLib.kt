@@ -10,13 +10,19 @@ import com.bennyhuo.aptutils.AptContext
 import com.bennyhuo.aptutils.logger.Logger
 import com.bennyhuo.aptutils.types.asJavaTypeName
 import com.bennyhuo.aptutils.types.isSameTypeWith
-import com.bennyhuo.aptutils.types.isSubTypeOf
 import com.bennyhuo.aptutils.types.simpleName
-import com.squareup.javapoet.*
-import javax.lang.model.element.*
-import javax.lang.model.type.NoType
+import com.squareup.javapoet.AnnotationSpec
+import com.squareup.javapoet.CodeBlock
+import com.squareup.javapoet.FieldSpec
+import com.squareup.javapoet.MethodSpec
+import com.squareup.javapoet.ParameterSpec
+import com.squareup.javapoet.TypeName
+import javax.lang.model.element.ElementKind
+import javax.lang.model.element.ExecutableElement
+import javax.lang.model.element.Modifier
+import javax.lang.model.element.TypeElement
+import javax.lang.model.element.VariableElement
 import javax.lang.model.type.TypeKind
-import javax.lang.model.type.TypeMirror
 
 /**
  * =======================================================
@@ -32,7 +38,7 @@ class DerivationLib(val targetClass: TargetClass) {
     val methodList = mutableListOf<MethodSpec>()
 
     companion object {
-        @SuppressWarnings("unchecked")
+        @Suppress("UNCHECKED_CAST")
         val kotlinMetadata = Class.forName("kotlin.Metadata") as Class<Annotation>
     }
 

@@ -7,12 +7,10 @@ import cc.duduhuo.util.pojo.derivation.compiler.builder.TargetClassBuilder
 import cc.duduhuo.util.pojo.derivation.compiler.entity.FieldDefinition
 import com.bennyhuo.aptutils.AptContext
 import com.bennyhuo.aptutils.logger.Logger
-import com.bennyhuo.aptutils.types.asElement
 import com.bennyhuo.aptutils.types.packageName
 import com.bennyhuo.aptutils.types.simpleName
 import com.google.auto.common.MoreElements.getAnnotationMirror
 import com.google.auto.service.AutoService
-import java.util.*
 import javax.annotation.processing.AbstractProcessor
 import javax.annotation.processing.ProcessingEnvironment
 import javax.annotation.processing.Processor
@@ -122,8 +120,10 @@ class DerivationProcessor : AbstractProcessor() {
                         targetClass.superClass = superClass
                     }
                 }
+
                 "superInterfaces" -> targetClass.superInterfaces =
                     getTypeElementListFromAnnotationValue(annotationValue)
+
                 "excludeFieldAnnotations" -> {
                     targetClass.excludeFieldAnnotations.addAll(getTypeElementListFromAnnotationValue(annotationValue))
                 }
