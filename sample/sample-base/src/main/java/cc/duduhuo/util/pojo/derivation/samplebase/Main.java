@@ -15,5 +15,6 @@ public class Main {
         System.out.println("Main");
         TestATestB aAndB = new TestATestB();
         System.out.println(aAndB);
+        System.out.println(aAndB.getSetC());
     }
 }

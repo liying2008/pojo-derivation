@@ -19,7 +19,9 @@ import cc.duduhuo.util.pojo.derivation.samplebase.anno.TestAnno1;
         includeFields = {"number"},
         excludeFields = {"level", "level2", "level3"},
         excludeFieldAnnotations = {TestAnno1.class},
-        fieldDefinitions = {@DerivationFieldDefinition(name = "number", type = float.class)},
+        fieldDefinitions = {
+                @DerivationFieldDefinition(name = "number", type = float.class)
+        },
         constructorTypes = {ConstructorType.NO_ARGS, ConstructorType.ALL_ARGS, ConstructorType.ALL_SOURCE_OBJS})
 final class TestAKotlinBCombine {
 }

@@ -43,7 +43,7 @@ class DerivationProcessor : AbstractProcessor() {
         supportedAnnotations.mapTo(HashSet(), Class<*>::getCanonicalName)
 
     override fun getSupportedSourceVersion(): SourceVersion {
-        return SourceVersion.RELEASE_8
+        return SourceVersion.latestSupported()
     }
 
     override fun process(annotations: MutableSet<out TypeElement>, roundEnv: RoundEnvironment): Boolean {
@@ -85,31 +85,8 @@ class DerivationProcessor : AbstractProcessor() {
         //     targetClass.excludeFieldAnnotations.add(it.asElement() as TypeElement)
         // }
 
-        val typeSymbol = "(type="
-        derivation.fieldDefinitions.forEach {
-            val defStr = it.toString()
-            // Logger.warn("\r\ndefStr=$defStr\r\n")
-            val name = it.name
-            val initialValue = it.initialValue
-            val typeStartIndex = defStr.indexOf(typeSymbol)
-            val typeEndIndex1 = defStr.indexOf(", ", typeStartIndex)
-            val typeEndIndex2 = defStr.indexOf(")", typeStartIndex)
-            val typeEndIndex = if (typeEndIndex1 != -1) typeEndIndex1 else typeEndIndex2
-            val classnames = defStr.substring(typeStartIndex + typeSymbol.length, typeEndIndex)
-            // Logger.warn("name=$name\r\n")
-            // Logger.warn("initialValue=${initialValue.contentToString()}\r\n")
-            // Logger.warn("classnames=$classnames\r\n")
-            val fieldDefinition = FieldDefinition(name).apply {
-                this.initialValue = if (initialValue.isEmpty()) null else initialValue[0]
-                if (classnames.isNotEmpty()) {
-                    this.classnames = classnames.split(",")
-                }
-            }
-            targetClass.fieldDefinitions[name] = fieldDefinition
-        }
-
-        val annotationMirror = getAnnotationMirror(element, Derivation::class.java).get()
-        annotationMirror.elementValues.forEach { (executableElement, annotationValue) ->
+        val derivationMirror = getAnnotationMirror(element, Derivation::class.java).get()
+        derivationMirror.elementValues.forEach { (executableElement, annotationValue) ->
             val executableElementName = executableElement.simpleName()
             // Logger.note(executableElement, executableElementName + ": " + annotationValue.value.toString() + "\r\n")
             when (executableElementName) {
@@ -127,8 +104,32 @@ class DerivationProcessor : AbstractProcessor() {
                 "excludeFieldAnnotations" -> {
                     targetClass.excludeFieldAnnotations.addAll(getTypeElementListFromAnnotationValue(annotationValue))
                 }
+
+                "fieldDefinitions" -> {
+                    val fdStr = annotationValue.value.toString()
+                    val fdParts = fdStr.split("@cc.duduhuo.util.pojo.derivation.annotation.DerivationFieldDefinition")
+                    for (fdPart in fdParts) {
+                        // trimmedPart 应当类似于 (name="score", initialValue={"0.98"}, type={double.class})
+                        val trimmedPart = fdPart.trim(' ', ',')
+                        if (trimmedPart == "") {
+                            continue
+                        }
+                        // Logger.note(executableElement, fdPart + "\r\n")
+                        if (!trimmedPart.startsWith("(") || !trimmedPart.endsWith(")")) {
+                            // trimmedPart 不以 ( 开头，或不以 ) 结尾
+                            Logger.warn(executableElement, "fieldDefinitions: $fdParts parsing error!")
+                            continue
+                        }
+                        val fieldDefinition = parseFieldDefinitionString(trimmedPart)
+                        // Logger.note(executableElement, "fieldDefinition: $fieldDefinition\r\n")
+                        if (fieldDefinition != null) {
+                            targetClass.fieldDefinitions[fieldDefinition.name] = fieldDefinition
+                        }
+                    }
+                }
             }
         }
+
         val derivationLib = DerivationLib(targetClass)
         try {
             derivationLib.parseFields()
@@ -164,5 +165,85 @@ class DerivationProcessor : AbstractProcessor() {
             }
             AptContext.elements.getTypeElement(classname)
         }.toMutableList()
+    }
+
+    private fun parseFieldDefinitionString(s: String): FieldDefinition? {
+        // 去掉左右小括号
+        var name = ""
+        var initialValue: String? = null
+        var classnames: List<String> = listOf()
+
+        var s2 = s.substring(1, s.length - 1)
+        while (s2.isNotEmpty()) {
+            val equalSignIndex = s2.indexOf('=')
+            if (equalSignIndex == -1) {
+                // 结束循环
+                s2 = ""
+                continue
+            }
+            val key = s2.substring(0, equalSignIndex).trim(' ', ',')
+            // value 不包含 "" 或 {}
+            var value = ""
+            var endSignIndex = -1
+            if (s2[equalSignIndex + 1] == '"') {
+                endSignIndex = s2.indexOf('"', equalSignIndex + 2)
+                if (endSignIndex == -1) {
+                    // 未找到结尾符号，报错
+                    Logger.warn("fieldDefinitions: $s parsing error!")
+                    return null
+                }
+                value = s2.substring(equalSignIndex + 2, endSignIndex)
+            } else if (s2[equalSignIndex + 1] == '{') {
+                endSignIndex = s2.indexOf('}', equalSignIndex + 2)
+                if (endSignIndex == -1) {
+                    // 未找到结尾符号，报错
+                    Logger.warn("fieldDefinitions: $s parsing error!")
+                    return null
+                }
+                value = s2.substring(equalSignIndex + 2, endSignIndex)
+            } else {
+                // Unreachable code
+                return null
+            }
+            when (key) {
+                "name" -> name = value
+                "initialValue" -> {
+                    val array = value.split(", ")
+                    initialValue = if (array.isEmpty()) {
+                        null
+                    } else {
+                        array[0].trim().trim('"')
+                    }
+                }
+
+                "type" -> {
+                    classnames = value.split(", ").map {
+                        if (it.endsWith(".class")) {
+                            // 去掉末尾的 .class
+                            it.substring(0, it.length - 6)
+                        } else {
+                            it
+                        }
+                    }
+                }
+            }
+            if (s2.length == endSignIndex + 1) {
+                // 结束循环
+                s2 = ""
+                continue
+            } else {
+                s2 = s2.substring(endSignIndex + 1)
+            }
+        }
+        if (name.isEmpty()) {
+            Logger.warn("fieldDefinitions: $s parsing error!")
+            return null
+        }
+        return FieldDefinition(name).apply {
+            this.initialValue = initialValue
+            if (classnames.isNotEmpty()) {
+                this.classnames = classnames
+            }
+        }
     }
 }

@@ -17,4 +17,8 @@ class FieldDefinition(
 
     /** field 类型 */
     var classnames: List<String> = listOf()
+
+    override fun toString(): String {
+        return "[FieldDefinition] name=$name, initialValue=$initialValue, classnames=$classnames"
+    }
 }

@@ -46,12 +46,12 @@ public final class TestB {
         this.name = name;
     }
 
-    public int getNumber() {
-        return number;
+    public long[] getNumber() {
+        return new long[]{number};
     }
 
-    public void setNumber(int number) {
-        this.number = number;
+    public void setNumber(long[] number) {
+        this.number = (int) number[0];
     }
 
     public String getDescription() {

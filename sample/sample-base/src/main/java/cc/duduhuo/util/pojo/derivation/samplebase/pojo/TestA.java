@@ -4,7 +4,9 @@ import cc.duduhuo.util.pojo.derivation.annotation.DerivationConstructorExclude;
 import cc.duduhuo.util.pojo.derivation.samplebase.anno.TestAnno1;
 import cc.duduhuo.util.pojo.derivation.samplebase.anno.TestAnno2;
 import cc.duduhuo.util.pojo.derivation.samplebase.ext.Extra2;
+import cc.duduhuo.util.pojo.derivation.samplebase.ext.Extra3;
 
+import java.util.HashMap;
 import java.util.List;
 
 /**
@@ -154,20 +156,20 @@ public final class TestA {
         this.isA = isA;
     }
 
-    public char getSetB() {
-        return setB;
+    public String[] getSetB() {
+        return new String[]{setB + ""};
     }
 
-    public void setSetB(char setB) {
-        this.setB = setB;
+    public void setSetB(String[] setB) {
+        this.setB = setB[0].charAt(0);
     }
 
-    public String getSetC() {
-        return setC;
+    public HashMap<String, Extra3[]> getSetC() {
+        return new HashMap<>();
     }
 
-    public void setSetC(String setC) {
-        this.setC = setC;
+    public void setSetC(HashMap<String, Extra3[]> setC) {
+        this.setC = "";
     }
 
     public boolean isAaa() {
@@ -194,11 +196,11 @@ public final class TestA {
         isCcc = ccc;
     }
 
-    public Extra2<Integer> getSetD() {
-        return setD;
+    public Extra2<String> getSetD() {
+        return new Extra2<>();
     }
 
-    public void setSetD(Extra2<Integer> setD) {
-        this.setD = setD;
+    public void setSetD(Extra2<String> setD) {
+        this.setD = new Extra2<>();
     }
 }

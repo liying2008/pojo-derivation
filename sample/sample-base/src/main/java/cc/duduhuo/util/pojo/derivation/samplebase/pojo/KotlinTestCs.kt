@@ -12,6 +12,6 @@ import java.io.Serializable
  */
 data class KotlinTestCs(private val a: Int) : Serializable {
     private val long1 = 7898236467234234230L
-    private val double1 = 6.565665904342342347398478926423
-    private val float1 = 434341.232423f
+    private val double1 = 6.565665904342342
+    private val float1 = 434341.22f
 }

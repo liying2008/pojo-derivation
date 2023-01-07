@@ -274,12 +274,15 @@ class DerivationLib(val targetClass: TargetClass) {
             element.asType().isSameTypeWith(String::class.java) -> {
                 fieldSpecBuilder.initializer("\$S", initialValue)
             }
+
             element.asType().kind == TypeKind.LONG -> {
                 fieldSpecBuilder.initializer("\$LL", initialValue)
             }
+
             element.asType().kind == TypeKind.FLOAT -> {
                 fieldSpecBuilder.initializer("\$LF", initialValue)
             }
+
             else -> {
                 fieldSpecBuilder.initializer("\$L", initialValue)
             }
@@ -495,6 +498,7 @@ class DerivationLib(val targetClass: TargetClass) {
                 typeName == TypeName.BOOLEAN -> name
                 typeName.isBoxedPrimitive && typeName.unbox() == TypeName.BOOLEAN -> "get" + name.substring(2)
                     .capitalize()
+
                 else -> "get${name.capitalize()}"
             }
         } else {

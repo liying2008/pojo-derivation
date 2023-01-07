@@ -10,8 +10,8 @@ group = ext["LIB_GROUP"]!!
 version = ext["LIB_VERSION"]!!
 
 java {
-    sourceCompatibility = JavaVersion.VERSION_17
-    targetCompatibility = JavaVersion.VERSION_17
+    sourceCompatibility = JavaVersion.VERSION_1_8
+    targetCompatibility = JavaVersion.VERSION_1_8
 }
 
 dependencies {
@@ -19,14 +19,12 @@ dependencies {
     kapt(project(":pojo-derivation-compiler"))
     implementation(project(":sample:sample-base"))
     implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
-    testImplementation(group = "junit", name = "junit", version = "4.12")
 }
-
 
 tasks.withType<KotlinCompile> {
     kotlinOptions {
         freeCompilerArgs = listOf("-Xjsr305=strict")
-        jvmTarget = "17"
+        jvmTarget = "1.8"
     }
 }
 

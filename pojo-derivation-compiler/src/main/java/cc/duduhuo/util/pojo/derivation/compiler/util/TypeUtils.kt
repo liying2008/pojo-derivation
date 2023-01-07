@@ -17,8 +17,7 @@ import com.squareup.javapoet.TypeName
  */
 object TypeUtils {
     fun getTypeNameFromClassnames(names: List<String>): TypeName? {
-        val size = names.size
-        when (size) {
+        when (names.size) {
             0 -> return null
             1 -> return getTypeName(names[0])
             else -> {
