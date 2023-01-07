@@ -183,8 +183,8 @@ class DerivationProcessor : AbstractProcessor() {
             }
             val key = s2.substring(0, equalSignIndex).trim(' ', ',')
             // value 不包含 "" 或 {}
-            var value = ""
-            var endSignIndex = -1
+            var value: String
+            var endSignIndex: Int
             if (s2[equalSignIndex + 1] == '"') {
                 endSignIndex = s2.indexOf('"', equalSignIndex + 2)
                 if (endSignIndex == -1) {

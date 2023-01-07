@@ -6,6 +6,8 @@ import cc.duduhuo.util.pojo.derivation.annotation.DerivationConstructorExclude
 import cc.duduhuo.util.pojo.derivation.compiler.entity.Field
 import cc.duduhuo.util.pojo.derivation.compiler.util.TypeUtils
 import cc.duduhuo.util.pojo.derivation.compiler.util.common.commonIgnoreFields
+import cc.duduhuo.util.pojo.derivation.compiler.util.common.lowercaseFirstChar
+import cc.duduhuo.util.pojo.derivation.compiler.util.common.uppercaseFirstChar
 import com.bennyhuo.aptutils.AptContext
 import com.bennyhuo.aptutils.logger.Logger
 import com.bennyhuo.aptutils.types.asJavaTypeName
@@ -397,7 +399,7 @@ class DerivationLib(val targetClass: TargetClass) {
             val groupedField = fieldMap.values.filterNot { it.combineType || it.enclosingClassExcludedInConstructor }
                 .groupBy { it.enclosingType }
             groupedField.forEach { (enclosingType, fields) ->
-                val sourceTypeVar = enclosingType.simpleName().decapitalize()
+                val sourceTypeVar = enclosingType.simpleName().lowercaseFirstChar()
                 parameterSpecs.add(
                     ParameterSpec.builder(
                         enclosingType.asType().asJavaTypeName(),
@@ -480,7 +482,7 @@ class DerivationLib(val targetClass: TargetClass) {
         } else {
             name
         }
-        return "set${property.capitalize()}"
+        return "set${property.uppercaseFirstChar()}"
     }
 
     /**
@@ -497,15 +499,15 @@ class DerivationLib(val targetClass: TargetClass) {
             when {
                 typeName == TypeName.BOOLEAN -> name
                 typeName.isBoxedPrimitive && typeName.unbox() == TypeName.BOOLEAN -> "get" + name.substring(2)
-                    .capitalize()
+                    .uppercaseFirstChar()
 
-                else -> "get${name.capitalize()}"
+                else -> "get${name.uppercaseFirstChar()}"
             }
         } else {
             when {
-                isKotlinClass -> "get${name.capitalize()}"
-                typeName == TypeName.BOOLEAN -> "is${name.capitalize()}"
-                else -> "get${name.capitalize()}"
+                isKotlinClass -> "get${name.uppercaseFirstChar()}"
+                typeName == TypeName.BOOLEAN -> "is${name.uppercaseFirstChar()}"
+                else -> "get${name.uppercaseFirstChar()}"
             }
         }
     }
