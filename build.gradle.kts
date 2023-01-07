@@ -5,8 +5,8 @@ plugins {
     id("com.vanniktech.maven.publish") version "0.23.1" apply false
 }
 
-group = ext["LIB_GROUP"]!!
-version = ext["LIB_VERSION"]!!
+group = ext["GROUP"]!!
+version = ext["VERSION_NAME"]!!
 
 
 subprojects {

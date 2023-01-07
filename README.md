@@ -1,6 +1,5 @@
 # pojo-derivation
 
-[![bintray](https://api.bintray.com/packages/liying2008/util/pojo-derivation-annotations/images/download.svg)](https://bintray.com/liying2008/util/pojo-derivation-annotations/_latestVersion)
 [![maven-central](https://img.shields.io/maven-central/v/cc.duduhuo.util/pojo-derivation-annotations.svg?style=flat)](https://mvnrepository.com/artifact/cc.duduhuo.util/pojo-derivation-annotations)
 [![license](https://img.shields.io/github/license/liying2008/pojo-derivation.svg?style=flat)](https://github.com/liying2008/pojo-derivation/blob/master/LICENSE)
 
@@ -14,8 +13,8 @@ Combine multiple POJOs to generate a new POJO.
 apply plugin: 'kotlin-kapt'
 
 dependencies {
-    compileOnly('cc.duduhuo.util:pojo-derivation-annotations:1.1.0')
-    kapt('cc.duduhuo.util:pojo-derivation-compiler:1.1.0')
+    compileOnly('cc.duduhuo.util:pojo-derivation-annotations:1.2.0')
+    kapt('cc.duduhuo.util:pojo-derivation-compiler:1.2.0')
 }
 ```
 
@@ -23,8 +22,8 @@ dependencies {
 
 ```gradle
 dependencies {
-    compileOnly('cc.duduhuo.util:pojo-derivation-annotations:1.1.0')
-    annotationProcessor('cc.duduhuo.util:pojo-derivation-compiler:1.1.0')
+    compileOnly('cc.duduhuo.util:pojo-derivation-annotations:1.2.0')
+    annotationProcessor('cc.duduhuo.util:pojo-derivation-compiler:1.2.0')
 }
 ```
 

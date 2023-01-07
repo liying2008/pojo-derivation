@@ -6,8 +6,8 @@ plugins {
     id("com.vanniktech.maven.publish")
 }
 
-group = ext["LIB_GROUP"]!!
-version = ext["LIB_VERSION"]!!
+group = ext["GROUP"]!!
+version = ext["VERSION_NAME"]!!
 
 java {
     sourceCompatibility = JavaVersion.VERSION_1_8
